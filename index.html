@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SG MASTER - Final v13 Auto-Date</title>
+    <title>SG MASTER - Final v14</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -154,11 +154,11 @@
                     <div class="bg-[#EBF3F9] p-4 text-center border-b border-[#E1F5FE] flex items-center justify-between">
                         <div class="w-1/2 text-center border-r border-blue-100/50">
                             <label class="text-[10px] text-[#8D6E63]/60 font-bold tracking-widest block mb-1">FLIGHT</label>
-                            <input v-model="f.flightNo" class="bg-transparent font-ticket text-xl font-bold text-[#5D4037] w-full text-center uppercase outline-none placeholder-[#A1887F]" placeholder="Flight No">
+                            <input v-model="f.flightNo" class="bg-transparent font-ticket text-xl font-bold text-[#5D4037] w-full text-center uppercase outline-none placeholder-[#A1887F]" placeholder="SQ 879">
                         </div>
                         <div class="w-1/2 text-center">
                             <label class="text-[10px] text-[#8D6E63]/60 font-bold tracking-widest block mb-1">REF</label>
-                            <input v-model="f.bookingRef" class="bg-transparent font-ticket text-lg font-bold text-[#E8A87C] w-full text-center uppercase outline-none placeholder-[#D7CCC8]" placeholder="Booking No">
+                            <input v-model="f.bookingRef" class="bg-transparent font-ticket text-lg font-bold text-[#E8A87C] w-full text-center uppercase outline-none placeholder-[#D7CCC8]" placeholder="L9K2RT">
                         </div>
                     </div>
 
@@ -225,7 +225,15 @@
                     <div class="space-y-3">
                         <div class="flex gap-3 items-center">
                             <div class="flex items-center gap-0.5 bg-[#FFF3E0] px-3 py-1.5 rounded-xl border border-[#FFE0B2]">
-                                <select v-model="item.hour" class="bg-transparent text-lg font-ticket font-bold text-[#E65100]"><option v-for="h in hours" :value="h">{{h}}</option></select><span class="text-[#E65100] font-bold text-xs">:</span><select v-model="item.minute" class="bg-transparent text-lg font-ticket font-bold text-[#E65100]"><option v-for="m in minutes" :value="m">{{m}}</option></select>
+                                <select v-model="item.hour" class="bg-transparent text-lg font-ticket font-bold text-[#E65100]">
+                                    <option value="" selected>--</option>
+                                    <option v-for="h in hours" :value="h">{{h}}</option>
+                                </select>
+                                <span class="text-[#E65100] font-bold text-xs">:</span>
+                                <select v-model="item.minute" class="bg-transparent text-lg font-ticket font-bold text-[#E65100]">
+                                    <option value="" selected>--</option>
+                                    <option v-for="m in minutes" :value="m">{{m}}</option>
+                                </select>
                             </div>
                             <input v-model="item.location" class="flex-1 text-lg font-bold bg-transparent placeholder-[#BCAAA4]" placeholder="行程名稱...">
                             <button @click="removeItinerary(item.id)" class="text-[#D7CCC8] hover:text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
@@ -376,6 +384,7 @@ createApp({
             if(!newTripForm.value.name) return;
             const id = Date.now().toString(); const trip = { id, ...newTripForm.value };
             allTrips.value.push(trip); saveAllTrips(); showAddModal.value = false; newTripForm.value = { name: '', startDate: '', endDate: '' }; openTrip(trip);
+            nextTick(() => lucide.createIcons()); // Fix Icon
         };
         const deleteTrip = (id) => {
             if(!confirm("確定要刪除這個行程嗎？")) return;
@@ -408,15 +417,28 @@ createApp({
         const getCurrentDate = (offset) => { if(activeTripMeta.value.startDate) { const d = new Date(activeTripMeta.value.startDate); d.setDate(d.getDate() + offset - 1); return d.toLocaleDateString('en-US', {month:'short', day:'numeric'}); } return `Day ${offset}`; };
         
         const updateDays = (v) => { totalDays.value = Math.max(1, totalDays.value + v); if(selectedDay.value > totalDays.value) selectedDay.value = totalDays.value; };
-        const dailyItinerary = computed(() => itinerary.value.filter(i => i.day === selectedDay.value).sort((a,b) => (a.hour+a.minute).localeCompare(b.hour+b.minute)));
-        const addItinerary = () => itinerary.value.push({ id:Date.now(), day:selectedDay.value, hour:'09', minute:'00', location:'', landmark:'' });
+        
+        // Itinerary Fix: Sort Logic (Empty time -> Bottom)
+        const dailyItinerary = computed(() => {
+            return itinerary.value.filter(i => i.day === selectedDay.value).sort((a,b) => {
+                const timeA = (a.hour && a.minute) ? (a.hour + a.minute) : 'ZZZZ';
+                const timeB = (b.hour && b.minute) ? (b.hour + b.minute) : 'ZZZZ';
+                return timeA.localeCompare(timeB);
+            });
+        });
+        
+        // Itinerary Fix: Default empty string
+        const addItinerary = () => { 
+            itinerary.value.push({ id:Date.now(), day:selectedDay.value, hour:'', minute:'', location:'', landmark:'' }); 
+            nextTick(() => lucide.createIcons()); 
+        };
         const removeItinerary = (id) => itinerary.value = itinerary.value.filter(i => i.id !== id);
         const openMap = (loc) => loc && window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`, '_blank');
 
         const addCategory = () => { const c = prompt("新類別:"); if(c&&c.trim()){ expenseCategories.value.push(c); newExp.value.category=c; }};
         const totalExpenseTWD = computed(() => expenses.value.reduce((s, e) => s + (e.amount * (rates[e.currency] || 1)), 0));
         const groupedExpenses = computed(() => { const g = {}; expenses.value.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(e => { const d = e.date || '其他'; if(!g[d]) g[d] = {items:[], totalTWD:0}; g[d].items.push(e); g[d].totalTWD += e.amount * (rates[e.currency]||1); }); return g; });
-        const saveExpense = () => { if(newExp.value.amount) { expenses.value.push({...newExp.value, id:Date.now()}); newExp.value.amount = null; newExp.value.note = ''; renderChart(); }};
+        const saveExpense = () => { if(newExp.value.amount) { expenses.value.push({...newExp.value, id:Date.now()}); newExp.value.amount = null; newExp.value.note = ''; renderChart(); nextTick(() => lucide.createIcons()); }};
         const removeExpense = (id) => { expenses.value = expenses.value.filter(e => e.id !== id); renderChart(); };
         const kawaiiColors = { '餐飲':'#E8A87C', '交通':'#8EB076', '住宿':'#5D4037', '活動':'#4285F4', '購物':'#A1887F' };
         const getCatColor = (c) => kawaiiColors[c] ? `bg-[${kawaiiColors[c]}]` : 'bg-gray-400';
@@ -425,7 +447,7 @@ createApp({
 
         const addShopCategory = () => { const c = prompt("新增類別:"); if(c&&c.trim()){ if(!shopCategories.value.includes(c)) shopCategories.value.push(c); newItem.value.cat = c; }};
         const handleImageUpload = (e) => { const file = e.target.files[0]; if(file) { const reader = new FileReader(); reader.onload = (evt) => { newItem.value.image = evt.target.result; }; reader.readAsDataURL(file); } };
-        const addShopItem = () => { if(newItem.value.name) { shoppingItems.value.push({...newItem.value, id:Date.now(), done:false}); newItem.value.name=''; newItem.value.image=null; }};
+        const addShopItem = () => { if(newItem.value.name) { shoppingItems.value.push({...newItem.value, id:Date.now(), done:false}); newItem.value.name=''; newItem.value.image=null; nextTick(() => lucide.createIcons()); }};
         const removeShopItem = (id) => shoppingItems.value = shoppingItems.value.filter(i => i.id !== id);
         const showImage = (img) => previewImage.value = img;
 
