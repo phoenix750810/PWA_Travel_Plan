@@ -1,4 +1,4 @@
-const CACHE_NAME = 'my-trips'; 
+const CACHE_NAME = 'my-trips-v1'; 
 
 // 這裡必須跟實際檔名完全一樣
 const urlsToCache = [
