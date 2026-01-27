@@ -1,8 +1,9 @@
 const CACHE_NAME = 'my-trips'; 
 
-// 2. 這裡的檔名必須跟 HTML 檔名完全一樣 (travel_skd.html)
+// 這裡必須跟實際檔名完全一樣
 const urlsToCache = [
-  './travel_skd.html',
+  './',             // 代表根目錄 (index.html)
+  './index.html',   // 明確指定 index.html
   './manifest.json',
   './icon.png'
 ];
