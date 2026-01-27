@@ -1,0 +1,16 @@
+{
+  "name": "My Trips",
+  "short_name": "My Trips",
+  "start_url": "./travel_skd.html",
+  "display": "standalone",
+  "background_color": "#FDFBF7",
+  "theme_color": "#8EB076",
+  "scope": ".",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
