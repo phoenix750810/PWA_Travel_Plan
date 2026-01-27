@@ -1,7 +1,7 @@
 {
   "name": "My Trips",
   "short_name": "My Trips",
-  "start_url": "./travel_skd.html",
+  "start_url": "./index.html", 
   "display": "standalone",
   "background_color": "#FDFBF7",
   "theme_color": "#8EB076",
