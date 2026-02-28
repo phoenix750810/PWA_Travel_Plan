@@ -1,5 +1,5 @@
 // 每次修改這裡的版本號 (例如 v1 -> v2)，手機就會自動更新 APP
-const CACHE_NAME = 'my-trips-v4'; 
+const CACHE_NAME = 'my-trips-v5'; 
 
 // 這裡的檔名必須跟 HTML 檔名完全一樣
 const urlsToCache = [
