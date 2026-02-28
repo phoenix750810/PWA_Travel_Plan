@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Travel Master v25</title>
+    <title>Travel Master v28</title>
     
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
@@ -50,10 +50,17 @@
 
         <div class="space-y-4 flex-1">
             <div v-for="trip in allTrips" :key="trip.id" @click="openTrip(trip)" class="home-card bg-white p-6 rounded-[30px] shadow-sm border border-[#F2EFE9] relative group cursor-pointer transition-transform active:scale-95">
-                <button @click.stop="deleteTrip(trip.id)" class="absolute top-4 right-4 p-2 bg-[#F7F5F2] rounded-full text-[#A1887F] hover:bg-red-50 hover:text-red-400 z-10 transition-colors">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                </button>
-                <div class="flex items-center gap-4">
+                
+                <div class="absolute top-4 right-4 flex gap-2 z-10">
+                    <button @click.stop="exportTripFromHome(trip)" class="p-2 bg-[#F0F7FF] rounded-full text-[#4285F4] hover:bg-blue-100 transition-colors" title="匯出/分享行程">
+                        <i data-lucide="share" class="w-4 h-4"></i>
+                    </button>
+                    <button @click.stop="deleteTrip(trip.id)" class="p-2 bg-[#F7F5F2] rounded-full text-[#A1887F] hover:bg-red-50 hover:text-red-400 transition-colors" title="刪除行程">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-4 mt-2">
                     <div class="w-16 h-16 rounded-2xl bg-[#E8A87C]/20 flex items-center justify-center text-[#E8A87C] shrink-0">
                         <i data-lucide="luggage" class="w-8 h-8"></i>
                     </div>
@@ -66,14 +73,21 @@
                     </div>
                 </div>
             </div>
+            
             <div v-if="allTrips.length === 0" class="text-center py-10 opacity-50">
                 <i data-lucide="plane" class="w-12 h-12 mx-auto mb-2 text-[#D7CCC8]"></i>
                 <p class="font-bold text-[#D7CCC8]">目前沒有任何計畫</p>
             </div>
         </div>
 
-        <div class="sticky bottom-6 mt-4">
-            <button @click="showAddModal = true" class="add-trip-btn w-full py-4 text-white font-bold rounded-[30px] shadow-lg shadow-green-100 flex items-center justify-center gap-2 text-lg"><i data-lucide="plus" class="w-6 h-6"></i> 建立新行程</button>
+        <div class="sticky bottom-6 mt-4 flex gap-3">
+            <button @click="showAddModal = true" class="add-trip-btn flex-1 py-4 text-white font-bold rounded-[30px] shadow-lg shadow-green-100 flex items-center justify-center gap-2 text-lg">
+                <i data-lucide="plus" class="w-6 h-6"></i> 建立新行程
+            </button>
+            <label class="bg-white text-[#8EB076] border-2 border-[#8EB076] w-16 rounded-[30px] shadow-lg flex items-center justify-center cursor-pointer hover:bg-green-50 transition-colors shrink-0" title="匯入行程">
+                <i data-lucide="download" class="w-6 h-6"></i>
+                <input type="file" accept=".json" class="hidden" @change="importTrip">
+            </label>
         </div>
 
         <div v-if="showAddModal" class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm flex items-end sm:items-center justify-center">
@@ -102,7 +116,9 @@
                         <input v-model="activeTripMeta.name" class="text-3xl font-ticket font-black text-[#5D4037] bg-transparent outline-none w-full placeholder-[#D7CCC8] p-0 border-0 focus:ring-0 focus:bg-transparent" placeholder="輸入地點...">
                     </div>
                 </div>
-                <div class="w-12 h-12 rounded-full bg-white border border-[#F2EFE9] shadow-sm flex items-center justify-center text-[#E8A87C]"><i data-lucide="plane" class="w-6 h-6"></i></div>
+                <div class="w-12 h-12 rounded-full bg-white border border-[#F2EFE9] shadow-sm flex items-center justify-center text-[#E8A87C]">
+                    <i data-lucide="plane" class="w-6 h-6"></i>
+                </div>
             </div>
             <nav class="flex justify-between bg-white p-1.5 rounded-[40px] shadow-sm border border-[#F2EFE9] gap-1">
                 <button v-for="t in tabs" :key="t.id" @click="changeTab(t.id)" :class="{'nav-active': currentTab === t.id}" class="nav-btn flex-1 py-3 rounded-[40px] flex justify-center items-center text-[#A1887F] font-bold group hover:bg-[#F7F5F2] hover:text-[#5D4037]"><i :data-lucide="t.icon" class="w-5 h-5 flex-shrink-0"></i><span class="nav-label text-sm">{{ t.name }}</span></button>
@@ -117,11 +133,11 @@
                     <div class="bg-[#EBF3F9] p-4 text-center border-b border-[#E1F5FE] flex items-center justify-between">
                         <div class="w-1/2 text-center border-r border-blue-100/50">
                             <label class="text-[10px] text-[#8D6E63]/60 font-bold tracking-widest block mb-1">FLIGHT</label>
-                            <input v-model="f.flightNo" class="bg-transparent font-ticket text-xl font-bold text-[#5D4037] w-full text-center uppercase outline-none placeholder-[#A1887F]" placeholder="Flight No">
+                            <input v-model="f.flightNo" class="bg-transparent font-ticket text-xl font-bold text-[#5D4037] w-full text-center uppercase outline-none placeholder-[#A1887F]" placeholder="SQ 879">
                         </div>
                         <div class="w-1/2 text-center">
                             <label class="text-[10px] text-[#8D6E63]/60 font-bold tracking-widest block mb-1">REF</label>
-                            <input v-model="f.bookingRef" class="bg-transparent font-ticket text-lg font-bold text-[#E8A87C] w-full text-center uppercase outline-none placeholder-[#D7CCC8]" placeholder="Ref. No">
+                            <input v-model="f.bookingRef" class="bg-transparent font-ticket text-lg font-bold text-[#E8A87C] w-full text-center uppercase outline-none placeholder-[#D7CCC8]" placeholder="L9K2RT">
                         </div>
                     </div>
 
@@ -136,7 +152,6 @@
                                     </select>
                                 </div>
                             </div>
-                            
                             <div class="flex-1 flex flex-col items-center px-2 mt-2">
                                 <div class="flex items-center w-full gap-1">
                                     <div class="h-[2px] w-full bg-[#E0E0E0] rounded-full"></div>
@@ -145,7 +160,6 @@
                                 </div>
                                 <span class="text-sm font-black text-[#0033FF] mt-1">{{ calculateDuration(f) }}</span>
                             </div>
-                            
                             <div class="flex flex-col items-center w-[35%]">
                                 <input v-model="f.arrAirport" @input="updateFlightTZ(f, 'arr')" class="text-4xl font-ticket font-black text-[#6D6968] w-full text-center uppercase outline-none bg-transparent" placeholder="ARR">
                                 <input v-model="f.arrTerminal" class="mt-1 bg-transparent border-b border-dashed border-[#D7CCC8] w-full text-sm font-bold text-[#8EB076] text-center py-1 placeholder-[#BCAAA4] outline-none" placeholder="航廈">
@@ -333,8 +347,13 @@
         </main>
     </div>
 
-    <div v-if="previewImage" class="fixed inset-0 z-[200] bg-[#3E2723]/90 backdrop-blur-sm flex items-center justify-center p-4" @click="previewImage = null">
-        <img :src="previewImage" class="max-w-full max-h-[85vh] rounded-[30px] shadow-2xl object-contain">
+    <div v-if="previewImage" class="fixed inset-0 z-[300] bg-black flex items-center justify-center">
+        <button @click="closeImage" class="fixed top-6 right-6 z-[310] p-3 bg-white/20 rounded-full text-white backdrop-blur-md shadow-lg border border-white/30">
+            <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+        <div class="w-full h-full overflow-auto flex items-center justify-center" @click.self="closeImage">
+            <img :src="previewImage" class="w-full h-auto object-contain transition-transform" @click.self="closeImage">
+        </div>
     </div>
 </div>
 
@@ -499,7 +518,6 @@ const app = createApp({
 
         const getCurrentDate = (offset) => { if(activeTripMeta.value.startDate) { const d = new Date(activeTripMeta.value.startDate); d.setDate(d.getDate() + offset - 1); return d.toLocaleDateString('en-US', {month:'short', day:'numeric'}); } return `Day ${offset}`; };
         
-        // 核心修復：切換天數時，強制重畫圖標
         const selectDay = (d) => {
             selectedDay.value = d;
             nextTick(() => { if(window.lucide) lucide.createIcons(); });
@@ -562,7 +580,25 @@ const app = createApp({
         const addShopItem = () => { if(newItem.value.name) { shoppingItems.value.push({...newItem.value, id:Date.now(), done:false}); newItem.value.name=''; newItem.value.image=null; nextTick(() => { if(window.lucide) lucide.createIcons(); }); }};
         const removeShopItem = (id) => shoppingItems.value = shoppingItems.value.filter(i => i.id !== id);
         
-        const showImage = (img) => previewImage.value = img;
+        // 🚀 動態解鎖手機原生縮放功能
+        const showImage = (img) => {
+            previewImage.value = img;
+            const viewport = document.querySelector('meta[name="viewport"]');
+            if(viewport) {
+                // 解鎖：允許最大放大 5 倍
+                viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
+            }
+            nextTick(() => { if(window.lucide) lucide.createIcons(); });
+        };
+
+        const closeImage = () => {
+            previewImage.value = null;
+            const viewport = document.querySelector('meta[name="viewport"]');
+            if(viewport) {
+                // 鎖定：恢復正常，防誤觸縮放
+                viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+            }
+        };
 
         const getLangName = (code) => languages.find(l => l.code === code)?.name || '';
         const swapLang = () => { const temp = transLang.value.from; transLang.value.from = transLang.value.to; transLang.value.to = temp; if(transInput.value) doTranslate(); };
@@ -573,6 +609,63 @@ const app = createApp({
         const handleOCR = (e) => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (evt) => { scanImage.value = evt.target.result; setTimeout(() => { scanImage.value = null; transInput.value = "Pork Bone Soup\nSpicy Noodles\n$15.00"; }, 1500); }; reader.readAsDataURL(file); } };
 
         const changeTab = (id) => { currentTab.value = id; if(id === 'expense') renderChart(); nextTick(() => { if(window.lucide) lucide.createIcons(); }); };
+
+        const exportTripFromHome = (trip) => {
+            try {
+                const tripData = {
+                    meta: trip,
+                    flights: JSON.parse(localStorage.getItem(`TRIP_${trip.id}_F`)) || [],
+                    itinerary: JSON.parse(localStorage.getItem(`TRIP_${trip.id}_I`)) || [],
+                    expenses: JSON.parse(localStorage.getItem(`TRIP_${trip.id}_E`)) || [],
+                    shopping: JSON.parse(localStorage.getItem(`TRIP_${trip.id}_S`)) || [],
+                    totalDays: parseInt(localStorage.getItem(`TRIP_${trip.id}_D`)) || 5,
+                    expenseCategories: JSON.parse(localStorage.getItem(`TRIP_${trip.id}_EC`)) || ['餐飲','交通','住宿','活動','購物'],
+                    shopCategories: JSON.parse(localStorage.getItem(`TRIP_${trip.id}_SC`)) || ['藥妝', '零食', '精品']
+                };
+                const dataStr = JSON.stringify(tripData);
+                const blob = new Blob([dataStr], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Trip_${trip.name || 'Export'}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch(e) {
+                alert("匯出失敗，請確認資料是否完整。");
+            }
+        };
+
+        const importTrip = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!data.meta || !data.meta.id) throw new Error("無效的行程檔案");
+                    
+                    const newId = Date.now().toString();
+                    const newMeta = { ...data.meta, id: newId, name: data.meta.name + ' (匯入)' };
+
+                    localStorage.setItem(`TRIP_${newId}_F`, JSON.stringify(data.flights || []));
+                    localStorage.setItem(`TRIP_${newId}_I`, JSON.stringify(data.itinerary || []));
+                    localStorage.setItem(`TRIP_${newId}_E`, JSON.stringify(data.expenses || []));
+                    localStorage.setItem(`TRIP_${newId}_S`, JSON.stringify(data.shopping || []));
+                    localStorage.setItem(`TRIP_${newId}_D`, data.totalDays || 5);
+                    localStorage.setItem(`TRIP_${newId}_EC`, JSON.stringify(data.expenseCategories || []));
+                    localStorage.setItem(`TRIP_${newId}_SC`, JSON.stringify(data.shopCategories || []));
+
+                    allTrips.value.push(newMeta);
+                    saveAllTrips();
+                    alert("行程匯入成功！");
+                    nextTick(() => { if(window.lucide) lucide.createIcons(); });
+                } catch(err) {
+                    alert("檔案格式錯誤，無法匯入！");
+                }
+                event.target.value = ''; 
+            };
+            reader.readAsText(file);
+        };
 
         watch([flights, itinerary, expenses, shoppingItems, totalDays, expenseCategories, shopCategories, activeTripMeta], () => {
             if(!activeTripId.value) return;
@@ -597,7 +690,7 @@ const app = createApp({
 
         onMounted(() => { if(window.lucide) lucide.createIcons(); });
 
-        return { activeTripId, activeTripMeta, allTrips, showAddModal, newTripForm, addNewTrip, deleteTrip, openTrip, closeTrip, saveAllTrips, currentTab, tabs, flights, addFlight, removeFlight, calculateDuration, updateFlightTZ, totalDays, selectedDay, selectDay, updateDays, dailyItinerary, addItinerary, removeItinerary, handleItineraryImageUpload, removeItineraryImage, openMap, hours, minutes, weatherData, getCurrentDate, expenses, newExp, totalExpenseTWD, saveExpense, removeExpense, expenseCategories, addCategory, commonCurrencies, groupedExpenses, rates, getCatColor, shoppingItems, shopCategories, newItem, addShopItem, removeShopItem, addShopCategory, handleShoppingImageUpload, showImage, previewImage, changeTab, transInput, transResult, transError, isTranslating, languages, transLang, swapLang, getLangName, startVoice, isListening, doTranslate, copyText, handleOCR, scanImage, updateFlightTZ, tzOffsets };
+        return { activeTripId, activeTripMeta, allTrips, showAddModal, newTripForm, addNewTrip, deleteTrip, openTrip, closeTrip, saveAllTrips, currentTab, tabs, flights, addFlight, removeFlight, calculateDuration, updateFlightTZ, totalDays, selectedDay, selectDay, updateDays, dailyItinerary, addItinerary, removeItinerary, handleItineraryImageUpload, removeItineraryImage, openMap, hours, minutes, weatherData, getCurrentDate, expenses, newExp, totalExpenseTWD, saveExpense, removeExpense, expenseCategories, addCategory, commonCurrencies, groupedExpenses, rates, getCatColor, shoppingItems, shopCategories, newItem, addShopItem, removeShopItem, addShopCategory, handleShoppingImageUpload, showImage, closeImage, previewImage, changeTab, transInput, transResult, transError, isTranslating, languages, transLang, swapLang, getLangName, startVoice, isListening, doTranslate, copyText, handleOCR, scanImage, updateFlightTZ, tzOffsets, exportTripFromHome, importTrip };
     }
 });
 
