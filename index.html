@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Travel Master v22</title>
+    <title>Travel Master v24</title>
     
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
@@ -20,58 +20,17 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Quicksand:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap');
         
-        body { 
-            font-family: 'Quicksand', 'Noto Sans TC', sans-serif; 
-            background-color: #FDFBF7; 
-            color: #5D4037; 
-            overflow-x: hidden; 
-        }
-        
+        body { font-family: 'Quicksand', 'Noto Sans TC', sans-serif; background-color: #FDFBF7; color: #5D4037; overflow-x: hidden; }
         .font-ticket { font-family: 'Oswald', sans-serif; letter-spacing: 0.05em; } 
         [v-cloak] { display: none !important; }
-        
-        .ticket-card { 
-            background: #FFFFFF; 
-            border-radius: 30px; 
-            box-shadow: 0 8px 24px rgba(93, 64, 55, 0.06); 
-            margin-bottom: 1.5rem; 
-            border: 1px solid #F2EFE9;
-            overflow: hidden;
-            position: relative; 
-        }
-
+        .ticket-card { background: #FFFFFF; border-radius: 30px; box-shadow: 0 8px 24px rgba(93, 64, 55, 0.06); margin-bottom: 1.5rem; border: 1px solid #F2EFE9; overflow: hidden; position: relative; }
         .nav-btn { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .nav-active { 
-            background-color: #8EB076 !important; 
-            color: white !important; 
-            box-shadow: 0 4px 12px rgba(142, 176, 118, 0.4); 
-            border-radius: 50px;
-            padding-left: 1.5rem;
-            padding-right: 1.5rem;
-            flex-grow: 1.5; 
-        }
+        .nav-active { background-color: #8EB076 !important; color: white !important; box-shadow: 0 4px 12px rgba(142, 176, 118, 0.4); border-radius: 50px; padding-left: 1.5rem; padding-right: 1.5rem; flex-grow: 1.5; }
         .nav-label { max-width: 0; overflow: hidden; opacity: 0; transition: all 0.3s ease; white-space: nowrap; }
         .nav-btn:hover .nav-label, .nav-active .nav-label { max-width: 100px; opacity: 1; margin-left: 0.5rem; }
-        
-        select, input, textarea { 
-            -webkit-appearance: none; appearance: none; 
-            border-radius: 16px; 
-            font-weight: 700; 
-            border: 1px solid transparent; 
-            font-size: 15px; 
-            color: #5D4037; 
-            outline: none; 
-            transition: 0.2s; 
-            background-color: #F7F5F2; 
-        }
-        input:focus, select:focus, textarea:focus { 
-            background-color: #FFFFFF; 
-            border-color: #8EB076; 
-            box-shadow: 0 0 0 3px rgba(142, 176, 118, 0.2); 
-        }
-
+        select, input, textarea { -webkit-appearance: none; appearance: none; border-radius: 16px; font-weight: 700; border: 1px solid transparent; font-size: 15px; color: #5D4037; outline: none; transition: 0.2s; background-color: #F7F5F2; }
+        input:focus, select:focus, textarea:focus { background-color: #FFFFFF; border-color: #8EB076; box-shadow: 0 0 0 3px rgba(142, 176, 118, 0.2); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        
         .custom-checkbox { appearance: none; width: 22px; height: 22px; border: 2px solid #D7CCC8; border-radius: 8px; display: grid; place-content: center; transition: 0.2s; cursor: pointer; flex-shrink: 0; }
         .custom-checkbox:checked { background-color: #8EB076; border-color: #8EB076; }
         .custom-checkbox::before { content: "✔"; color: white; font-size: 12px; transform: scale(0); transition: 0.2s; }
@@ -177,7 +136,6 @@
                                     </select>
                                 </div>
                             </div>
-                            
                             <div class="flex-1 flex flex-col items-center px-2 mt-2">
                                 <div class="flex items-center w-full gap-1">
                                     <div class="h-[2px] w-full bg-[#E0E0E0] rounded-full"></div>
@@ -186,7 +144,6 @@
                                 </div>
                                 <span class="text-sm font-black text-[#0033FF] mt-1">{{ calculateDuration(f) }}</span>
                             </div>
-                            
                             <div class="flex flex-col items-center w-[35%]">
                                 <input v-model="f.arrAirport" @input="updateFlightTZ(f, 'arr')" class="text-4xl font-ticket font-black text-[#6D6968] w-full text-center uppercase outline-none bg-transparent" placeholder="ARR">
                                 <input v-model="f.arrTerminal" class="mt-1 bg-transparent border-b border-dashed border-[#D7CCC8] w-full text-sm font-bold text-[#8EB076] text-center py-1 placeholder-[#BCAAA4] outline-none" placeholder="航廈">
@@ -199,7 +156,6 @@
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
-                            
                             <div class="bg-[#F7F5F2] rounded-2xl p-3 border border-[#F2EFE9] flex flex-col gap-2 relative group-hover:border-[#8EB076] transition-colors">
                                 <div class="text-center border-b border-[#D7CCC8]/50 pb-1 mb-1">
                                     <span class="text-[10px] font-bold text-[#8EB076] tracking-widest">DEPARTURE</span>
@@ -213,7 +169,6 @@
                                     <input type="time" v-model="f.depTime" class="bg-transparent w-full text-2xl font-ticket font-bold text-[#5D4037] p-0 h-10">
                                 </div>
                             </div>
-
                             <div class="bg-[#F7F5F2] rounded-2xl p-3 border border-[#F2EFE9] flex flex-col gap-2 relative group-hover:border-[#E8A87C] transition-colors">
                                 <div class="text-center border-b border-[#D7CCC8]/50 pb-1 mb-1">
                                     <span class="text-[10px] font-bold text-[#E8A87C] tracking-widest">ARRIVAL</span>
@@ -227,7 +182,6 @@
                                     <input type="time" v-model="f.arrTime" class="bg-transparent w-full text-2xl font-ticket font-bold text-[#5D4037] p-0 h-10">
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -256,6 +210,7 @@
                         <button @click="updateDays(1)" class="w-10 h-10 bg-white rounded-full text-[#8EB076] border border-[#8EB076]/30 flex items-center justify-center font-bold shadow-sm">+</button>
                     </div>
                 </div>
+                
                 <div v-for="item in dailyItinerary" :key="item.id" class="ticket-card p-5 border-l-[6px] border-l-[#E8A87C]">
                     <div class="space-y-3">
                         <div class="flex gap-3 items-center">
@@ -279,6 +234,19 @@
                             </button>
                         </div>
                         <textarea v-model="item.notes" v-auto-height class="w-full bg-[#F7F5F2] p-3 rounded-2xl text-sm min-h-[60px] resize-none border-none placeholder-[#D7CCC8] overflow-hidden" placeholder="備註..."></textarea>
+                        
+                        <div class="pt-1 flex flex-wrap gap-2">
+                            <div v-for="(img, idx) in item.images" :key="idx" class="relative w-12 h-12 rounded-xl border border-gray-200 shadow-sm shrink-0">
+                                <div class="w-full h-full bg-cover bg-center rounded-xl cursor-zoom-in" :style="{backgroundImage: `url(${img})`}" @click="showImage(img)"></div>
+                                <button @click.stop="removeItineraryImage(item, idx)" class="absolute -top-1.5 -right-1.5 bg-white text-red-400 rounded-full shadow-sm hover:text-red-600 border border-gray-100 flex items-center justify-center w-5 h-5">
+                                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                            <label class="w-12 h-12 rounded-xl border-2 border-dashed border-[#D7CCC8] bg-[#FDFBF7] flex items-center justify-center text-[#A1887F] cursor-pointer hover:border-[#8EB076] hover:text-[#8EB076] hover:bg-green-50 transition-colors shrink-0">
+                                <i data-lucide="plus" class="w-5 h-5"></i>
+                                <input type="file" accept="image/*" class="hidden" @change="handleItineraryImageUpload($event, item)">
+                            </label>
+                        </div>
                     </div>
                 </div>
                 <button @click="addItinerary" class="w-full py-4 border-2 border-dashed border-[#D7CCC8] rounded-[30px] text-[#A1887F] font-bold hover:border-[#8EB076] hover:text-[#8EB076] transition-colors">+ 新增行程</button>
@@ -322,7 +290,7 @@
                     <input v-model="newItem.name" class="w-full p-3 bg-[#F7F5F2] rounded-2xl font-bold border border-transparent focus:bg-white focus:border-[#8EB076]" placeholder="想買什麼？ (e.g. 吹風機)">
                     <div class="flex gap-2">
                         <div class="flex-1 bg-[#F7F5F2] rounded-2xl flex items-center px-2"><select v-model="newItem.cat" class="bg-transparent w-full text-sm py-3 font-bold text-[#5D4037]"><option v-for="c in shopCategories">{{c}}</option></select><button @click="addShopCategory" class="p-1.5 text-[#8EB076] bg-white rounded-lg shadow-sm"><i data-lucide="plus" class="w-4 h-4"></i></button></div>
-                        <label class="p-3 bg-[#E8F5E9] rounded-2xl cursor-pointer text-[#43A047] hover:bg-[#C8E6C9] transition-colors"><i data-lucide="camera" class="w-6 h-6"></i><input type="file" accept="image/*" class="hidden" @change="handleImageUpload"></label>
+                        <label class="p-3 bg-[#E8F5E9] rounded-2xl cursor-pointer text-[#43A047] hover:bg-[#C8E6C9] transition-colors"><i data-lucide="camera" class="w-6 h-6"></i><input type="file" accept="image/*" class="hidden" @change="handleShoppingImageUpload"></label>
                     </div>
                     <div v-if="newItem.image" class="relative w-full bg-white rounded-xl p-2 flex items-center gap-3 border border-[#F2EFE9] shadow-inner"><div class="w-12 h-12 rounded-lg bg-cover bg-center shrink-0 border border-gray-200" :style="{backgroundImage: `url(${newItem.image})`}"></div><span class="text-xs font-bold text-gray-400">已選取圖片</span><button @click="newItem.image = null" class="ml-auto text-gray-300 hover:text-red-400"><i data-lucide="x-circle" class="w-5 h-5"></i></button></div>
                     <button @click="addShopItem" class="w-full bg-[#8EB076] text-white py-3.5 rounded-2xl font-bold text-lg shadow-md shadow-green-100">加入清單</button>
@@ -362,7 +330,7 @@
     </div>
 
     <div v-if="previewImage" class="fixed inset-0 z-[200] bg-[#3E2723]/90 backdrop-blur-sm flex items-center justify-center p-4" @click="previewImage = null">
-        <img :src="previewImage" class="max-w-full max-h-[85vh] rounded-[30px] shadow-2xl">
+        <img :src="previewImage" class="max-w-full max-h-[85vh] rounded-[30px] shadow-2xl object-contain">
     </div>
 </div>
 
@@ -376,7 +344,6 @@ const app = createApp({
         const activeTripMeta = ref({});
         const allTrips = ref([]);
 
-        // Robust Data Loading
         try {
             const raw = localStorage.getItem('SG_ALL_TRIPS');
             allTrips.value = raw ? JSON.parse(raw) : [];
@@ -403,23 +370,19 @@ const app = createApp({
         const newItem = ref({ name:'', cat:'藥妝', image: null });
         const previewImage = ref(null);
 
-        // Expanded Airport DB with Timezones
         const tzMap = { 
-            'TPE':8, 'KHH':8, 'TSA':8, 'RMQ':8, 'KNH':8, 'MZG':8, // Taiwan
-            'NRT':9, 'HND':9, 'KIX':9, 'FUK':9, 'CTS':9, 'OKA':9, 'ISG':9, // Japan
-            'ICN':9, 'PUS':9, 'CJU':9, // Korea
-            'SIN':8, 'KUL':8, 'MNL':8, 'CEB':8, // SEA UTC+8
-            'BKK':7, 'DMK':7, 'HAN':7, 'SGN':7, 'DAD':7, // SEA UTC+7
-            'HKG':8, 'MFM':8, // HK/Macau
-            'SYD':11, 'MEL':11, 'AKL':13, // Oceania
-            'LHR':0, 'CDG':1, 'FRA':1, 'AMS':1, 'FCO':1, // Europe
-            'JFK':-5, 'LAX':-8, 'SFO':-8, 'SEA':-8, 'YVR':-8, 'YYZ':-5 // North America
+            'TPE':8, 'KHH':8, 'TSA':8, 'RMQ':8, 'KNH':8, 'MZG':8, 
+            'NRT':9, 'HND':9, 'KIX':9, 'FUK':9, 'CTS':9, 'OKA':9, 'ISG':9, 
+            'ICN':9, 'PUS':9, 'CJU':9, 'SIN':8, 'KUL':8, 'MNL':8, 'CEB':8, 
+            'BKK':7, 'DMK':7, 'HAN':7, 'SGN':7, 'DAD':7, 'HKG':8, 'MFM':8, 
+            'SYD':11, 'MEL':11, 'AKL':13, 'LHR':0, 'CDG':1, 'FRA':1, 'AMS':1, 'FCO':1, 
+            'JFK':-5, 'LAX':-8, 'SFO':-8, 'SEA':-8, 'YVR':-8, 'YYZ':-5 
         };
         const rates = { TWD: 1, SGD: 24.5, JPY: 0.21, USD: 31.5, KRW: 0.024, EUR: 34.2 };
         const commonCurrencies = Object.keys(rates);
         const hours = Array.from({length: 24}, (_, i) => i.toString().padStart(2, '0'));
         const minutes = Array.from({length: 12}, (_, i) => (i * 5).toString().padStart(2, '0'));
-        const tzOffsets = Array.from({length: 27}, (_, i) => i - 12); // -12 to +14
+        const tzOffsets = Array.from({length: 27}, (_, i) => i - 12); 
 
         const generateWeather = () => {
             const now = new Date(); const currentHour = now.getHours(); const hourly = [];
@@ -437,6 +400,30 @@ const app = createApp({
         const languages = [{code:'zh-TW', name:'中文'}, {code:'en-US', name:'英文'}, {code:'ja-JP', name:'日文'}, {code:'ko-KR', name:'韓文'}, {code:'th-TH', name:'泰文'}, {code:'vi-VN', name:'越南文'}];
         const transLang = ref({ from: 'zh-TW', to: 'en-US' }); const isListening = ref(false); const scanImage = ref(null);
 
+        const compressImage = (file, maxWidth = 800) => {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.6)); 
+                    };
+                };
+            });
+        };
+
         const addNewTrip = () => {
             if(!newTripForm.value.name) return;
             const id = Date.now().toString(); const trip = { id, ...newTripForm.value };
@@ -450,10 +437,9 @@ const app = createApp({
             saveAllTrips();
         };
         const saveAllTrips = () => { localStorage.setItem('SG_ALL_TRIPS', JSON.stringify(allTrips.value)); };
+        
         const openTrip = (trip) => {
             activeTripId.value = trip.id; activeTripMeta.value = trip;
-            
-            // Load and Fix Flights
             try {
                 flights.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_F`)) || [];
                 if(Array.isArray(flights.value)) {
@@ -464,12 +450,15 @@ const app = createApp({
                 } else flights.value = [];
             } catch(e) { flights.value = []; }
 
-            try { itinerary.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_I`)) || []; } catch(e) { itinerary.value = []; }
+            try { 
+                itinerary.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_I`)) || []; 
+                itinerary.value.forEach(i => { if(!i.images) i.images = []; });
+            } catch(e) { itinerary.value = []; }
+            
             try { expenses.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_E`)) || []; } catch(e) { expenses.value = []; }
             try { shoppingItems.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_S`)) || []; } catch(e) { shoppingItems.value = []; }
             
             totalDays.value = parseInt(localStorage.getItem(`TRIP_${trip.id}_D`)) || 5;
-            
             try { expenseCategories.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_EC`)) || ['餐飲','交通','住宿','活動','購物']; } catch(e) { expenseCategories.value = ['餐飲','交通','住宿','活動','購物']; }
             try { shopCategories.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_SC`)) || ['藥妝', '零食', '精品']; } catch(e) { shopCategories.value = ['藥妝', '零食', '精品']; }
             
@@ -480,8 +469,6 @@ const app = createApp({
 
         const addFlight = () => { flights.value.push({ id:Date.now(), flightNo:'', depAirport:'', arrAirport:'', depDate:'', arrDate:'', depTerminal:'', arrTerminal:'', depTz:8, arrTz:8 }); nextTick(() => { if(window.lucide) lucide.createIcons(); }); };
         const removeFlight = (id) => flights.value = flights.value.filter(f => f.id !== id);
-        
-        // Auto TZ Update (On Input)
         const updateFlightTZ = (f, type) => {
             if (!f.depAirport && !f.arrAirport) return;
             const code = (type === 'dep' ? f.depAirport : f.arrAirport).toUpperCase();
@@ -490,31 +477,22 @@ const app = createApp({
                 else f.arrTz = tzMap[code];
             }
         };
-
         const calculateDuration = (f) => { 
             if (!f.depTime || !f.arrTime || !f.depDate || !f.arrDate) return "--h --m"; 
-            
-            // Safari Safe Date Parsing (YYYY/MM/DD)
             const dStr = f.depDate.replace(/-/g, '/') + ' ' + f.depTime;
             const aStr = f.arrDate.replace(/-/g, '/') + ' ' + f.arrTime;
-            
-            const dep = new Date(dStr);
-            const arr = new Date(aStr);
-            
+            const dep = new Date(dStr); const arr = new Date(aStr);
             if(isNaN(dep.getTime()) || isNaN(arr.getTime())) return "--h --m";
-
             const dTz = f.depTz !== undefined ? f.depTz : 8;
             const aTz = f.arrTz !== undefined ? f.arrTz : 8;
-
             const depTs = dep.getTime() - (dTz * 3600000);
             const arrTs = arr.getTime() - (aTz * 3600000);
-            
             const diffMs = arrTs - depTs;
             const diffMins = Math.floor(diffMs / 60000);
-            
             if (diffMins < 0) return "Error";
             return Math.floor(diffMins / 60) + 'h ' + (diffMins % 60) + 'm'; 
         };
+
         const getCurrentDate = (offset) => { if(activeTripMeta.value.startDate) { const d = new Date(activeTripMeta.value.startDate); d.setDate(d.getDate() + offset - 1); return d.toLocaleDateString('en-US', {month:'short', day:'numeric'}); } return `Day ${offset}`; };
         const updateDays = (v) => { totalDays.value = Math.max(1, totalDays.value + v); if(selectedDay.value > totalDays.value) selectedDay.value = totalDays.value; };
         
@@ -526,8 +504,24 @@ const app = createApp({
             });
         });
         
-        const addItinerary = () => { itinerary.value.push({ id:Date.now(), day:selectedDay.value, hour:'', minute:'', location:'', landmark:'' }); nextTick(() => { if(window.lucide) lucide.createIcons(); }); };
+        const addItinerary = () => { itinerary.value.push({ id:Date.now(), day:selectedDay.value, hour:'', minute:'', location:'', landmark:'', notes:'', images: [] }); nextTick(() => { if(window.lucide) lucide.createIcons(); }); };
         const removeItinerary = (id) => itinerary.value = itinerary.value.filter(i => i.id !== id);
+        
+        const handleItineraryImageUpload = async (e, item) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            try {
+                if(!item.images) item.images = [];
+                const compressedImage = await compressImage(file);
+                item.images.push(compressedImage);
+                nextTick(() => { if(window.lucide) lucide.createIcons(); });
+            } catch(error) {
+                alert("圖片處理失敗，請換一張試試");
+            }
+            e.target.value = ''; 
+        };
+        const removeItineraryImage = (item, idx) => { item.images.splice(idx, 1); };
+
         const openMap = (loc) => loc && window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`, '_blank');
 
         const addCategory = () => { const c = prompt("新類別:"); if(c&&c.trim()){ expenseCategories.value.push(c); newExp.value.category=c; }};
@@ -541,9 +535,19 @@ const app = createApp({
         const renderChart = () => { nextTick(() => { const ctx = document.getElementById('expenseChart'); if(!ctx || expenses.value.length === 0) return; if(chartObj) chartObj.destroy(); const totals = {}; expenseCategories.value.forEach(c => totals[c] = 0); expenses.value.forEach(e => { const val = e.amount * (rates[e.currency] || 1); if(totals[e.category]!==undefined) totals[e.category] += val; else totals['其他'] = (totals['其他']||0)+val; }); const labels = Object.keys(totals).filter(k => totals[k] > 0); const data = labels.map(k => totals[k]); const bgColors = labels.map(l => kawaiiColors[l] || '#CFD8DC'); const percentages = data.map(v => ((v/totalExpenseTWD.value)*100).toFixed(1) + '%'); chartObj = new Chart(ctx, { type:'doughnut', data: { labels, datasets:[{ data, backgroundColor: bgColors, borderWidth:0 }] }, options: { cutout:'65%', plugins: { legend:{ display:true, position:'bottom', labels:{ boxWidth:10, usePointStyle:true, font:{size:12, family:"'Quicksand'"} } }, datalabels: { color:'#5D4037', font:{weight:'bold'}, formatter: (val, ctx) => percentages[ctx.dataIndex] } } } }); }); };
 
         const addShopCategory = () => { const c = prompt("新增類別:"); if(c&&c.trim()){ if(!shopCategories.value.includes(c)) shopCategories.value.push(c); newItem.value.cat = c; }};
-        const handleImageUpload = (e) => { const file = e.target.files[0]; if(file) { const reader = new FileReader(); reader.onload = (evt) => { newItem.value.image = evt.target.result; }; reader.readAsDataURL(file); } };
+        const handleShoppingImageUpload = async (e) => { 
+            const file = e.target.files[0]; 
+            if(file) { 
+                try {
+                    newItem.value.image = await compressImage(file); 
+                } catch(error) {
+                    alert("圖片處理失敗");
+                }
+            } 
+        };
         const addShopItem = () => { if(newItem.value.name) { shoppingItems.value.push({...newItem.value, id:Date.now(), done:false}); newItem.value.name=''; newItem.value.image=null; nextTick(() => { if(window.lucide) lucide.createIcons(); }); }};
         const removeShopItem = (id) => shoppingItems.value = shoppingItems.value.filter(i => i.id !== id);
+        
         const showImage = (img) => previewImage.value = img;
 
         const getLangName = (code) => languages.find(l => l.code === code)?.name || '';
@@ -561,22 +565,28 @@ const app = createApp({
             const tripInList = allTrips.value.find(t => t.id === activeTripId.value);
             if(tripInList) tripInList.name = activeTripMeta.value.name;
             saveAllTrips();
-            localStorage.setItem(`TRIP_${activeTripId.value}_F`, JSON.stringify(flights.value));
-            localStorage.setItem(`TRIP_${activeTripId.value}_I`, JSON.stringify(itinerary.value));
-            localStorage.setItem(`TRIP_${activeTripId.value}_E`, JSON.stringify(expenses.value));
-            localStorage.setItem(`TRIP_${activeTripId.value}_S`, JSON.stringify(shoppingItems.value));
-            localStorage.setItem(`TRIP_${activeTripId.value}_D`, totalDays.value);
-            localStorage.setItem(`TRIP_${activeTripId.value}_EC`, JSON.stringify(expenseCategories.value));
-            localStorage.setItem(`TRIP_${activeTripId.value}_SC`, JSON.stringify(shopCategories.value));
+            
+            try {
+                localStorage.setItem(`TRIP_${activeTripId.value}_F`, JSON.stringify(flights.value));
+                localStorage.setItem(`TRIP_${activeTripId.value}_I`, JSON.stringify(itinerary.value));
+                localStorage.setItem(`TRIP_${activeTripId.value}_E`, JSON.stringify(expenses.value));
+                localStorage.setItem(`TRIP_${activeTripId.value}_S`, JSON.stringify(shoppingItems.value));
+                localStorage.setItem(`TRIP_${activeTripId.value}_D`, totalDays.value);
+                localStorage.setItem(`TRIP_${activeTripId.value}_EC`, JSON.stringify(expenseCategories.value));
+                localStorage.setItem(`TRIP_${activeTripId.value}_SC`, JSON.stringify(shopCategories.value));
+            } catch (e) {
+                if (e.name === 'QuotaExceededError') {
+                    alert('⚠️ 儲存空間已滿！請刪除一些不必要的圖片或行程。');
+                }
+            }
         }, { deep: true });
 
         onMounted(() => { if(window.lucide) lucide.createIcons(); });
 
-        return { activeTripId, activeTripMeta, allTrips, showAddModal, newTripForm, addNewTrip, deleteTrip, openTrip, closeTrip, saveAllTrips, currentTab, tabs, flights, addFlight, removeFlight, calculateDuration, updateFlightTZ, totalDays, selectedDay, updateDays, dailyItinerary, addItinerary, removeItinerary, openMap, hours, minutes, weatherData, getCurrentDate, expenses, newExp, totalExpenseTWD, saveExpense, removeExpense, expenseCategories, addCategory, commonCurrencies, groupedExpenses, rates, getCatColor, shoppingItems, shopCategories, newItem, addShopItem, removeShopItem, addShopCategory, handleImageUpload, showImage, previewImage, changeTab, transInput, transResult, transError, isTranslating, languages, transLang, swapLang, getLangName, startVoice, isListening, doTranslate, copyText, handleOCR, scanImage, updateFlightTZ, tzOffsets };
+        return { activeTripId, activeTripMeta, allTrips, showAddModal, newTripForm, addNewTrip, deleteTrip, openTrip, closeTrip, saveAllTrips, currentTab, tabs, flights, addFlight, removeFlight, calculateDuration, updateFlightTZ, totalDays, selectedDay, updateDays, dailyItinerary, addItinerary, removeItinerary, handleItineraryImageUpload, removeItineraryImage, openMap, hours, minutes, weatherData, getCurrentDate, expenses, newExp, totalExpenseTWD, saveExpense, removeExpense, expenseCategories, addCategory, commonCurrencies, groupedExpenses, rates, getCatColor, shoppingItems, shopCategories, newItem, addShopItem, removeShopItem, addShopCategory, handleShoppingImageUpload, showImage, previewImage, changeTab, transInput, transResult, transError, isTranslating, languages, transLang, swapLang, getLangName, startVoice, isListening, doTranslate, copyText, handleOCR, scanImage, updateFlightTZ, tzOffsets };
     }
 });
 
-// 自定義指令：自動長高
 app.directive('auto-height', {
     mounted(el) {
         el.style.height = 'auto';
