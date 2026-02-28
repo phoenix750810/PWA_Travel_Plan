@@ -3,12 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SG MASTER - Final v14</title>
+    <title>Travel Master v22</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#FDFBF7">
+
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Quicksand:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap');
         
@@ -20,7 +28,7 @@
         }
         
         .font-ticket { font-family: 'Oswald', sans-serif; letter-spacing: 0.05em; } 
-        [v-cloak] { display: none; }
+        [v-cloak] { display: none !important; }
         
         .ticket-card { 
             background: #FFFFFF; 
@@ -68,10 +76,6 @@
         .custom-checkbox:checked { background-color: #8EB076; border-color: #8EB076; }
         .custom-checkbox::before { content: "✔"; color: white; font-size: 12px; transform: scale(0); transition: 0.2s; }
         .custom-checkbox:checked::before { transform: scale(1); }
-
-        @keyframes scan-line { 0% { top: 0%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
-        .scan-effect { position: absolute; left: 0; width: 100%; height: 4px; background: #8EB076; box-shadow: 0 0 10px #8EB076; animation: scan-line 1.5s infinite linear; }
-        
         .add-trip-btn { background-image: linear-gradient(135deg, #8EB076 0%, #AED581 100%); }
     </style>
 </head>
@@ -154,19 +158,24 @@
                     <div class="bg-[#EBF3F9] p-4 text-center border-b border-[#E1F5FE] flex items-center justify-between">
                         <div class="w-1/2 text-center border-r border-blue-100/50">
                             <label class="text-[10px] text-[#8D6E63]/60 font-bold tracking-widest block mb-1">FLIGHT</label>
-                            <input v-model="f.flightNo" class="bg-transparent font-ticket text-xl font-bold text-[#E8A87C] w-full text-center uppercase outline-none placeholder-[#D7CCC8]" placeholder="航班號碼">
+                            <input v-model="f.flightNo" class="bg-transparent font-ticket text-xl font-bold text-[#5D4037] w-full text-center uppercase outline-none placeholder-[#A1887F]" placeholder="SQ 879">
                         </div>
                         <div class="w-1/2 text-center">
                             <label class="text-[10px] text-[#8D6E63]/60 font-bold tracking-widest block mb-1">REF</label>
-                            <input v-model="f.bookingRef" class="bg-transparent font-ticket text-lg font-bold text-[#E8A87C] w-full text-center uppercase outline-none placeholder-[#D7CCC8]" placeholder="預定編號">
+                            <input v-model="f.bookingRef" class="bg-transparent font-ticket text-lg font-bold text-[#E8A87C] w-full text-center uppercase outline-none placeholder-[#D7CCC8]" placeholder="L9K2RT">
                         </div>
                     </div>
 
                     <div class="p-6">
                         <div class="flex justify-between items-start mb-6">
                             <div class="flex flex-col items-center w-[35%]">
-                                <input v-model="f.depAirport" class="text-4xl font-ticket font-black text-[#6D6968] w-full text-center uppercase outline-none bg-transparent" placeholder="DEP">
+                                <input v-model="f.depAirport" @input="updateFlightTZ(f, 'dep')" class="text-4xl font-ticket font-black text-[#6D6968] w-full text-center uppercase outline-none bg-transparent" placeholder="DEP">
                                 <input v-model="f.depTerminal" class="mt-1 bg-transparent border-b border-dashed border-[#D7CCC8] w-full text-sm font-bold text-[#8EB076] text-center py-1 placeholder-[#BCAAA4] outline-none" placeholder="航廈">
+                                <div class="mt-2">
+                                    <select v-model="f.depTz" class="appearance-none bg-[#F0F0F0] text-[#A1887F] text-[10px] font-bold px-2 py-0.5 rounded-full text-center min-w-[50px] outline-none cursor-pointer hover:bg-[#E0E0E0] transition-colors border border-transparent focus:border-[#8EB076]">
+                                        <option v-for="o in tzOffsets" :value="o">UTC{{ o>=0?'+'+o:o }}</option>
+                                    </select>
+                                </div>
                             </div>
                             
                             <div class="flex-1 flex flex-col items-center px-2 mt-2">
@@ -179,20 +188,46 @@
                             </div>
                             
                             <div class="flex flex-col items-center w-[35%]">
-                                <input v-model="f.arrAirport" class="text-4xl font-ticket font-black text-[#6D6968] w-full text-center uppercase outline-none bg-transparent" placeholder="ARR">
+                                <input v-model="f.arrAirport" @input="updateFlightTZ(f, 'arr')" class="text-4xl font-ticket font-black text-[#6D6968] w-full text-center uppercase outline-none bg-transparent" placeholder="ARR">
                                 <input v-model="f.arrTerminal" class="mt-1 bg-transparent border-b border-dashed border-[#D7CCC8] w-full text-sm font-bold text-[#8EB076] text-center py-1 placeholder-[#BCAAA4] outline-none" placeholder="航廈">
+                                <div class="mt-2">
+                                    <select v-model="f.arrTz" class="appearance-none bg-[#F0F0F0] text-[#A1887F] text-[10px] font-bold px-2 py-0.5 rounded-full text-center min-w-[50px] outline-none cursor-pointer hover:bg-[#E0E0E0] transition-colors border border-transparent focus:border-[#8EB076]">
+                                        <option v-for="o in tzOffsets" :value="o">UTC{{ o>=0?'+'+o:o }}</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-[#F7F5F2] p-3 rounded-2xl border border-[#F2EFE9] flex flex-col items-center">
-                                <input type="date" v-model="f.depDate" @change="f.arrDate = f.depDate" class="text-[11px] font-bold text-[#A1887F] bg-transparent text-center w-full mb-1">
-                                <input type="time" v-model="f.depTime" class="text-2xl font-ticket font-bold text-[#5D4037] bg-transparent text-center w-full">
+                        <div class="grid grid-cols-2 gap-3">
+                            
+                            <div class="bg-[#F7F5F2] rounded-2xl p-3 border border-[#F2EFE9] flex flex-col gap-2 relative group-hover:border-[#8EB076] transition-colors">
+                                <div class="text-center border-b border-[#D7CCC8]/50 pb-1 mb-1">
+                                    <span class="text-[10px] font-bold text-[#8EB076] tracking-widest">DEPARTURE</span>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-[10px] font-bold text-[#A1887F]">日期 Date</label>
+                                    <input type="date" v-model="f.depDate" @change="f.arrDate = f.depDate" class="bg-transparent w-full text-sm font-bold text-[#5D4037] p-0 h-8 border-b border-dashed border-[#D7CCC8] focus:border-[#8EB076] rounded-none">
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-[10px] font-bold text-[#A1887F]">時間 Time</label>
+                                    <input type="time" v-model="f.depTime" class="bg-transparent w-full text-2xl font-ticket font-bold text-[#5D4037] p-0 h-10">
+                                </div>
                             </div>
-                            <div class="bg-[#F7F5F2] p-3 rounded-2xl border border-[#F2EFE9] flex flex-col items-center">
-                                <input type="date" v-model="f.arrDate" class="text-[11px] font-bold text-[#A1887F] bg-transparent text-center w-full mb-1">
-                                <input type="time" v-model="f.arrTime" class="text-2xl font-ticket font-bold text-[#5D4037] bg-transparent text-center w-full">
+
+                            <div class="bg-[#F7F5F2] rounded-2xl p-3 border border-[#F2EFE9] flex flex-col gap-2 relative group-hover:border-[#E8A87C] transition-colors">
+                                <div class="text-center border-b border-[#D7CCC8]/50 pb-1 mb-1">
+                                    <span class="text-[10px] font-bold text-[#E8A87C] tracking-widest">ARRIVAL</span>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-[10px] font-bold text-[#A1887F]">日期 Date</label>
+                                    <input type="date" v-model="f.arrDate" class="bg-transparent w-full text-sm font-bold text-[#5D4037] p-0 h-8 border-b border-dashed border-[#D7CCC8] focus:border-[#E8A87C] rounded-none">
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-[10px] font-bold text-[#A1887F]">時間 Time</label>
+                                    <input type="time" v-model="f.arrTime" class="bg-transparent w-full text-2xl font-ticket font-bold text-[#5D4037] p-0 h-10">
+                                </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -226,12 +261,12 @@
                         <div class="flex gap-3 items-center">
                             <div class="flex items-center gap-0.5 bg-[#FFF3E0] px-3 py-1.5 rounded-xl border border-[#FFE0B2]">
                                 <select v-model="item.hour" class="bg-transparent text-lg font-ticket font-bold text-[#E65100]">
-                                    <option value="" selected>--</option>
+                                    <option value="">--</option>
                                     <option v-for="h in hours" :value="h">{{h}}</option>
                                 </select>
                                 <span class="text-[#E65100] font-bold text-xs">:</span>
                                 <select v-model="item.minute" class="bg-transparent text-lg font-ticket font-bold text-[#E65100]">
-                                    <option value="" selected>--</option>
+                                    <option value="">--</option>
                                     <option v-for="m in minutes" :value="m">{{m}}</option>
                                 </select>
                             </div>
@@ -243,7 +278,7 @@
                                 <i data-lucide="map-pinned" class="w-4 h-4"></i><input v-model="item.landmark" class="flex-1 bg-transparent placeholder-[#90CAF9] text-xs font-bold" placeholder="搜尋地標 (開啟地圖)">
                             </button>
                         </div>
-                        <textarea v-model="item.notes" class="w-full bg-[#F7F5F2] p-3 rounded-2xl text-sm min-h-[60px] resize-none border-none placeholder-[#D7CCC8]" placeholder="備註..."></textarea>
+                        <textarea v-model="item.notes" v-auto-height class="w-full bg-[#F7F5F2] p-3 rounded-2xl text-sm min-h-[60px] resize-none border-none placeholder-[#D7CCC8] overflow-hidden" placeholder="備註..."></textarea>
                     </div>
                 </div>
                 <button @click="addItinerary" class="w-full py-4 border-2 border-dashed border-[#D7CCC8] rounded-[30px] text-[#A1887F] font-bold hover:border-[#8EB076] hover:text-[#8EB076] transition-colors">+ 新增行程</button>
@@ -335,11 +370,22 @@
 const { createApp, ref, computed, watch, onMounted, nextTick } = Vue;
 Chart.register(ChartDataLabels);
 
-createApp({
+const app = createApp({
     setup() {
         const activeTripId = ref(null);
         const activeTripMeta = ref({});
-        const allTrips = ref(JSON.parse(localStorage.getItem('SG_ALL_TRIPS')) || []);
+        const allTrips = ref([]);
+
+        // Robust Data Loading
+        try {
+            const raw = localStorage.getItem('SG_ALL_TRIPS');
+            allTrips.value = raw ? JSON.parse(raw) : [];
+        } catch(e) {
+            console.error("Resetting corrupt data");
+            localStorage.removeItem('SG_ALL_TRIPS');
+            allTrips.value = [];
+        }
+
         const currentTab = ref('flight');
         const tabs = [{id:'flight', icon:'plane', name:'機票'}, {id:'itinerary', icon:'book-text', name:'行程'}, {id:'expense', icon:'dollar-sign', name:'記帳'}, {id:'shopping', icon:'shopping-bag', name:'購物'}, {id:'translate', icon:'languages', name:'翻譯'}];
         const showAddModal = ref(false);
@@ -357,11 +403,23 @@ createApp({
         const newItem = ref({ name:'', cat:'藥妝', image: null });
         const previewImage = ref(null);
 
-        const airportDb = { 'TPE':'台北', 'SIN':'新加坡', 'NRT':'東京', 'KIX':'大阪', 'HKG':'香港', 'ICN':'首爾', 'KHH':'高雄', 'PUS':'釜山' };
+        // Expanded Airport DB with Timezones
+        const tzMap = { 
+            'TPE':8, 'KHH':8, 'TSA':8, 'RMQ':8, 'KNH':8, 'MZG':8, // Taiwan
+            'NRT':9, 'HND':9, 'KIX':9, 'FUK':9, 'CTS':9, 'OKA':9, 'ISG':9, // Japan
+            'ICN':9, 'PUS':9, 'CJU':9, // Korea
+            'SIN':8, 'KUL':8, 'MNL':8, 'CEB':8, // SEA UTC+8
+            'BKK':7, 'DMK':7, 'HAN':7, 'SGN':7, 'DAD':7, // SEA UTC+7
+            'HKG':8, 'MFM':8, // HK/Macau
+            'SYD':11, 'MEL':11, 'AKL':13, // Oceania
+            'LHR':0, 'CDG':1, 'FRA':1, 'AMS':1, 'FCO':1, // Europe
+            'JFK':-5, 'LAX':-8, 'SFO':-8, 'SEA':-8, 'YVR':-8, 'YYZ':-5 // North America
+        };
         const rates = { TWD: 1, SGD: 24.5, JPY: 0.21, USD: 31.5, KRW: 0.024, EUR: 34.2 };
         const commonCurrencies = Object.keys(rates);
         const hours = Array.from({length: 24}, (_, i) => i.toString().padStart(2, '0'));
         const minutes = Array.from({length: 12}, (_, i) => (i * 5).toString().padStart(2, '0'));
+        const tzOffsets = Array.from({length: 27}, (_, i) => i - 12); // -12 to +14
 
         const generateWeather = () => {
             const now = new Date(); const currentHour = now.getHours(); const hourly = [];
@@ -379,12 +437,11 @@ createApp({
         const languages = [{code:'zh-TW', name:'中文'}, {code:'en-US', name:'英文'}, {code:'ja-JP', name:'日文'}, {code:'ko-KR', name:'韓文'}, {code:'th-TH', name:'泰文'}, {code:'vi-VN', name:'越南文'}];
         const transLang = ref({ from: 'zh-TW', to: 'en-US' }); const isListening = ref(false); const scanImage = ref(null);
 
-        // Homepage
         const addNewTrip = () => {
             if(!newTripForm.value.name) return;
             const id = Date.now().toString(); const trip = { id, ...newTripForm.value };
             allTrips.value.push(trip); saveAllTrips(); showAddModal.value = false; newTripForm.value = { name: '', startDate: '', endDate: '' }; openTrip(trip);
-            nextTick(() => lucide.createIcons()); // Fix Icon
+            nextTick(() => { if(window.lucide) lucide.createIcons(); });
         };
         const deleteTrip = (id) => {
             if(!confirm("確定要刪除這個行程嗎？")) return;
@@ -395,30 +452,72 @@ createApp({
         const saveAllTrips = () => { localStorage.setItem('SG_ALL_TRIPS', JSON.stringify(allTrips.value)); };
         const openTrip = (trip) => {
             activeTripId.value = trip.id; activeTripMeta.value = trip;
-            flights.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_F`)) || [];
-            itinerary.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_I`)) || [];
-            expenses.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_E`)) || [];
-            shoppingItems.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_S`)) || [];
-            totalDays.value = parseInt(localStorage.getItem(`TRIP_${trip.id}_D`)) || 5;
-            expenseCategories.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_EC`)) || ['餐飲','交通','住宿','活動','購物'];
-            shopCategories.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_SC`)) || ['藥妝', '零食', '精品'];
-            if(flights.value.length === 0) flights.value = [];
-            newExp.value.date = trip.startDate || new Date().toISOString().split('T')[0];
-            nextTick(() => lucide.createIcons());
-        };
-        const closeTrip = () => { activeTripId.value = null; nextTick(() => lucide.createIcons()); };
+            
+            // Load and Fix Flights
+            try {
+                flights.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_F`)) || [];
+                if(Array.isArray(flights.value)) {
+                    flights.value.forEach(f => {
+                        if(f.depTz === undefined) f.depTz = 8;
+                        if(f.arrTz === undefined) f.arrTz = 8;
+                    });
+                } else flights.value = [];
+            } catch(e) { flights.value = []; }
 
-        // Flight
-        const addFlight = () => { flights.value.push({ id:Date.now(), flightNo:'', depAirport:'', arrAirport:'', depDate:'', arrDate:'', depTerminal:'', arrTerminal:'' }); nextTick(() => lucide.createIcons()); };
+            try { itinerary.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_I`)) || []; } catch(e) { itinerary.value = []; }
+            try { expenses.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_E`)) || []; } catch(e) { expenses.value = []; }
+            try { shoppingItems.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_S`)) || []; } catch(e) { shoppingItems.value = []; }
+            
+            totalDays.value = parseInt(localStorage.getItem(`TRIP_${trip.id}_D`)) || 5;
+            
+            try { expenseCategories.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_EC`)) || ['餐飲','交通','住宿','活動','購物']; } catch(e) { expenseCategories.value = ['餐飲','交通','住宿','活動','購物']; }
+            try { shopCategories.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_SC`)) || ['藥妝', '零食', '精品']; } catch(e) { shopCategories.value = ['藥妝', '零食', '精品']; }
+            
+            newExp.value.date = trip.startDate || new Date().toISOString().split('T')[0];
+            nextTick(() => { if(window.lucide) lucide.createIcons(); });
+        };
+        const closeTrip = () => { activeTripId.value = null; nextTick(() => { if(window.lucide) lucide.createIcons(); }); };
+
+        const addFlight = () => { flights.value.push({ id:Date.now(), flightNo:'', depAirport:'', arrAirport:'', depDate:'', arrDate:'', depTerminal:'', arrTerminal:'', depTz:8, arrTz:8 }); nextTick(() => { if(window.lucide) lucide.createIcons(); }); };
         const removeFlight = (id) => flights.value = flights.value.filter(f => f.id !== id);
         
-        const getCityName = (code) => code ? (airportDb[code.toUpperCase()] || code) : "";
-        const calculateDuration = (f) => { if (!f.depTime || !f.arrTime) return "--h --m"; const diff = new Date(`2000/01/01 ${f.arrTime}`) - new Date(`2000/01/01 ${f.depTime}`); const d = diff < 0 ? diff + 86400000 : diff; return `${Math.floor(d/3600000)}h ${Math.floor((d%3600000)/60000)}m`; };
+        // Auto TZ Update (On Input)
+        const updateFlightTZ = (f, type) => {
+            if (!f.depAirport && !f.arrAirport) return;
+            const code = (type === 'dep' ? f.depAirport : f.arrAirport).toUpperCase();
+            if(tzMap[code] !== undefined) {
+                if(type === 'dep') f.depTz = tzMap[code];
+                else f.arrTz = tzMap[code];
+            }
+        };
+
+        const calculateDuration = (f) => { 
+            if (!f.depTime || !f.arrTime || !f.depDate || !f.arrDate) return "--h --m"; 
+            
+            // Safari Safe Date Parsing (YYYY/MM/DD)
+            const dStr = f.depDate.replace(/-/g, '/') + ' ' + f.depTime;
+            const aStr = f.arrDate.replace(/-/g, '/') + ' ' + f.arrTime;
+            
+            const dep = new Date(dStr);
+            const arr = new Date(aStr);
+            
+            if(isNaN(dep.getTime()) || isNaN(arr.getTime())) return "--h --m";
+
+            const dTz = f.depTz !== undefined ? f.depTz : 8;
+            const aTz = f.arrTz !== undefined ? f.arrTz : 8;
+
+            const depTs = dep.getTime() - (dTz * 3600000);
+            const arrTs = arr.getTime() - (aTz * 3600000);
+            
+            const diffMs = arrTs - depTs;
+            const diffMins = Math.floor(diffMs / 60000);
+            
+            if (diffMins < 0) return "Error";
+            return Math.floor(diffMins / 60) + 'h ' + (diffMins % 60) + 'm'; 
+        };
         const getCurrentDate = (offset) => { if(activeTripMeta.value.startDate) { const d = new Date(activeTripMeta.value.startDate); d.setDate(d.getDate() + offset - 1); return d.toLocaleDateString('en-US', {month:'short', day:'numeric'}); } return `Day ${offset}`; };
-        
         const updateDays = (v) => { totalDays.value = Math.max(1, totalDays.value + v); if(selectedDay.value > totalDays.value) selectedDay.value = totalDays.value; };
         
-        // Itinerary Fix: Sort Logic (Empty time -> Bottom)
         const dailyItinerary = computed(() => {
             return itinerary.value.filter(i => i.day === selectedDay.value).sort((a,b) => {
                 const timeA = (a.hour && a.minute) ? (a.hour + a.minute) : 'ZZZZ';
@@ -427,18 +526,14 @@ createApp({
             });
         });
         
-        // Itinerary Fix: Default empty string
-        const addItinerary = () => { 
-            itinerary.value.push({ id:Date.now(), day:selectedDay.value, hour:'', minute:'', location:'', landmark:'' }); 
-            nextTick(() => lucide.createIcons()); 
-        };
+        const addItinerary = () => { itinerary.value.push({ id:Date.now(), day:selectedDay.value, hour:'', minute:'', location:'', landmark:'' }); nextTick(() => { if(window.lucide) lucide.createIcons(); }); };
         const removeItinerary = (id) => itinerary.value = itinerary.value.filter(i => i.id !== id);
         const openMap = (loc) => loc && window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`, '_blank');
 
         const addCategory = () => { const c = prompt("新類別:"); if(c&&c.trim()){ expenseCategories.value.push(c); newExp.value.category=c; }};
         const totalExpenseTWD = computed(() => expenses.value.reduce((s, e) => s + (e.amount * (rates[e.currency] || 1)), 0));
         const groupedExpenses = computed(() => { const g = {}; expenses.value.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(e => { const d = e.date || '其他'; if(!g[d]) g[d] = {items:[], totalTWD:0}; g[d].items.push(e); g[d].totalTWD += e.amount * (rates[e.currency]||1); }); return g; });
-        const saveExpense = () => { if(newExp.value.amount) { expenses.value.push({...newExp.value, id:Date.now()}); newExp.value.amount = null; newExp.value.note = ''; renderChart(); nextTick(() => lucide.createIcons()); }};
+        const saveExpense = () => { if(newExp.value.amount) { expenses.value.push({...newExp.value, id:Date.now()}); newExp.value.amount = null; newExp.value.note = ''; renderChart(); nextTick(() => { if(window.lucide) lucide.createIcons(); }); }};
         const removeExpense = (id) => { expenses.value = expenses.value.filter(e => e.id !== id); renderChart(); };
         const kawaiiColors = { '餐飲':'#E8A87C', '交通':'#8EB076', '住宿':'#5D4037', '活動':'#4285F4', '購物':'#A1887F' };
         const getCatColor = (c) => kawaiiColors[c] ? `bg-[${kawaiiColors[c]}]` : 'bg-gray-400';
@@ -447,7 +542,7 @@ createApp({
 
         const addShopCategory = () => { const c = prompt("新增類別:"); if(c&&c.trim()){ if(!shopCategories.value.includes(c)) shopCategories.value.push(c); newItem.value.cat = c; }};
         const handleImageUpload = (e) => { const file = e.target.files[0]; if(file) { const reader = new FileReader(); reader.onload = (evt) => { newItem.value.image = evt.target.result; }; reader.readAsDataURL(file); } };
-        const addShopItem = () => { if(newItem.value.name) { shoppingItems.value.push({...newItem.value, id:Date.now(), done:false}); newItem.value.name=''; newItem.value.image=null; nextTick(() => lucide.createIcons()); }};
+        const addShopItem = () => { if(newItem.value.name) { shoppingItems.value.push({...newItem.value, id:Date.now(), done:false}); newItem.value.name=''; newItem.value.image=null; nextTick(() => { if(window.lucide) lucide.createIcons(); }); }};
         const removeShopItem = (id) => shoppingItems.value = shoppingItems.value.filter(i => i.id !== id);
         const showImage = (img) => previewImage.value = img;
 
@@ -459,7 +554,7 @@ createApp({
         const startVoice = () => { if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) { alert("瀏覽器不支援"); return; } const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; const recognition = new SpeechRecognition(); recognition.lang = transLang.value.from; recognition.interimResults = false; isListening.value = true; recognition.start(); recognition.onresult = (e) => { transInput.value = e.results[0][0].transcript; isListening.value = false; }; recognition.onend = () => isListening.value = false; };
         const handleOCR = (e) => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (evt) => { scanImage.value = evt.target.result; setTimeout(() => { scanImage.value = null; transInput.value = "Pork Bone Soup\nSpicy Noodles\n$15.00"; }, 1500); }; reader.readAsDataURL(file); } };
 
-        const changeTab = (id) => { currentTab.value = id; if(id === 'expense') renderChart(); nextTick(() => lucide.createIcons()); };
+        const changeTab = (id) => { currentTab.value = id; if(id === 'expense') renderChart(); nextTick(() => { if(window.lucide) lucide.createIcons(); }); };
 
         watch([flights, itinerary, expenses, shoppingItems, totalDays, expenseCategories, shopCategories, activeTripMeta], () => {
             if(!activeTripId.value) return;
@@ -475,11 +570,29 @@ createApp({
             localStorage.setItem(`TRIP_${activeTripId.value}_SC`, JSON.stringify(shopCategories.value));
         }, { deep: true });
 
-        onMounted(() => { lucide.createIcons(); });
+        onMounted(() => { if(window.lucide) lucide.createIcons(); });
 
-        return { activeTripId, activeTripMeta, allTrips, showAddModal, newTripForm, addNewTrip, deleteTrip, openTrip, closeTrip, saveAllTrips, currentTab, tabs, flights, getCityName, calculateDuration, addFlight, removeFlight, totalDays, selectedDay, updateDays, dailyItinerary, addItinerary, removeItinerary, openMap, hours, minutes, weatherData, getCurrentDate, expenses, newExp, totalExpenseTWD, saveExpense, removeExpense, expenseCategories, addCategory, commonCurrencies, groupedExpenses, rates, getCatColor, shoppingItems, shopCategories, newItem, addShopItem, removeShopItem, addShopCategory, handleImageUpload, showImage, previewImage, changeTab, transInput, transResult, transError, isTranslating, languages, transLang, swapLang, getLangName, startVoice, isListening, doTranslate, copyText, handleOCR, scanImage };
+        return { activeTripId, activeTripMeta, allTrips, showAddModal, newTripForm, addNewTrip, deleteTrip, openTrip, closeTrip, saveAllTrips, currentTab, tabs, flights, addFlight, removeFlight, calculateDuration, updateFlightTZ, totalDays, selectedDay, updateDays, dailyItinerary, addItinerary, removeItinerary, openMap, hours, minutes, weatherData, getCurrentDate, expenses, newExp, totalExpenseTWD, saveExpense, removeExpense, expenseCategories, addCategory, commonCurrencies, groupedExpenses, rates, getCatColor, shoppingItems, shopCategories, newItem, addShopItem, removeShopItem, addShopCategory, handleImageUpload, showImage, previewImage, changeTab, transInput, transResult, transError, isTranslating, languages, transLang, swapLang, getLangName, startVoice, isListening, doTranslate, copyText, handleOCR, scanImage, updateFlightTZ, tzOffsets };
     }
-}).mount('#app');
+});
+
+// 自定義指令：自動長高
+app.directive('auto-height', {
+    mounted(el) {
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+        el.addEventListener('input', () => {
+            el.style.height = 'auto';
+            el.style.height = el.scrollHeight + 'px';
+        });
+    },
+    updated(el) {
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+    }
+});
+
+app.mount('#app');
 </script>
 </body>
 </html>
