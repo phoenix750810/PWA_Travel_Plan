@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Travel Master v24</title>
+    <title>Travel Master v25</title>
     
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
@@ -117,11 +117,11 @@
                     <div class="bg-[#EBF3F9] p-4 text-center border-b border-[#E1F5FE] flex items-center justify-between">
                         <div class="w-1/2 text-center border-r border-blue-100/50">
                             <label class="text-[10px] text-[#8D6E63]/60 font-bold tracking-widest block mb-1">FLIGHT</label>
-                            <input v-model="f.flightNo" class="bg-transparent font-ticket text-xl font-bold text-[#5D4037] w-full text-center uppercase outline-none placeholder-[#A1887F]" placeholder="SQ 879">
+                            <input v-model="f.flightNo" class="bg-transparent font-ticket text-xl font-bold text-[#5D4037] w-full text-center uppercase outline-none placeholder-[#A1887F]" placeholder="Flight No">
                         </div>
                         <div class="w-1/2 text-center">
                             <label class="text-[10px] text-[#8D6E63]/60 font-bold tracking-widest block mb-1">REF</label>
-                            <input v-model="f.bookingRef" class="bg-transparent font-ticket text-lg font-bold text-[#E8A87C] w-full text-center uppercase outline-none placeholder-[#D7CCC8]" placeholder="Ref.No">
+                            <input v-model="f.bookingRef" class="bg-transparent font-ticket text-lg font-bold text-[#E8A87C] w-full text-center uppercase outline-none placeholder-[#D7CCC8]" placeholder="Ref. No">
                         </div>
                     </div>
 
@@ -136,6 +136,7 @@
                                     </select>
                                 </div>
                             </div>
+                            
                             <div class="flex-1 flex flex-col items-center px-2 mt-2">
                                 <div class="flex items-center w-full gap-1">
                                     <div class="h-[2px] w-full bg-[#E0E0E0] rounded-full"></div>
@@ -144,6 +145,7 @@
                                 </div>
                                 <span class="text-sm font-black text-[#0033FF] mt-1">{{ calculateDuration(f) }}</span>
                             </div>
+                            
                             <div class="flex flex-col items-center w-[35%]">
                                 <input v-model="f.arrAirport" @input="updateFlightTZ(f, 'arr')" class="text-4xl font-ticket font-black text-[#6D6968] w-full text-center uppercase outline-none bg-transparent" placeholder="ARR">
                                 <input v-model="f.arrTerminal" class="mt-1 bg-transparent border-b border-dashed border-[#D7CCC8] w-full text-sm font-bold text-[#8EB076] text-center py-1 placeholder-[#BCAAA4] outline-none" placeholder="航廈">
@@ -169,6 +171,7 @@
                                     <input type="time" v-model="f.depTime" class="bg-transparent w-full text-2xl font-ticket font-bold text-[#5D4037] p-0 h-10">
                                 </div>
                             </div>
+
                             <div class="bg-[#F7F5F2] rounded-2xl p-3 border border-[#F2EFE9] flex flex-col gap-2 relative group-hover:border-[#E8A87C] transition-colors">
                                 <div class="text-center border-b border-[#D7CCC8]/50 pb-1 mb-1">
                                     <span class="text-[10px] font-bold text-[#E8A87C] tracking-widest">ARRIVAL</span>
@@ -203,8 +206,9 @@
                     </div>
                     <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-[#E8A87C] rounded-full blur-3xl opacity-30"></div>
                 </div>
+                
                 <div class="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
-                    <button v-for="d in totalDays" :key="d" @click="selectedDay = d" :class="selectedDay === d ? 'nav-active' : 'bg-white text-[#8D6E63] border border-[#F2EFE9]'" class="px-5 py-2.5 rounded-full font-bold text-sm shrink-0 shadow-sm transition-all font-ticket">Day {{d}}</button>
+                    <button v-for="d in totalDays" :key="d" @click="selectDay(d)" :class="selectedDay === d ? 'nav-active' : 'bg-white text-[#8D6E63] border border-[#F2EFE9]'" class="px-5 py-2.5 rounded-full font-bold text-sm shrink-0 shadow-sm transition-all font-ticket">Day {{d}}</button>
                     <div class="flex items-center gap-2 pl-2 border-l border-[#D7CCC8]/30">
                         <button @click="updateDays(-1)" class="w-10 h-10 bg-white rounded-full text-[#E8A87C] border border-[#E8A87C]/30 flex items-center justify-center font-bold shadow-sm">-</button>
                         <button @click="updateDays(1)" class="w-10 h-10 bg-white rounded-full text-[#8EB076] border border-[#8EB076]/30 flex items-center justify-center font-bold shadow-sm">+</button>
@@ -494,7 +498,17 @@ const app = createApp({
         };
 
         const getCurrentDate = (offset) => { if(activeTripMeta.value.startDate) { const d = new Date(activeTripMeta.value.startDate); d.setDate(d.getDate() + offset - 1); return d.toLocaleDateString('en-US', {month:'short', day:'numeric'}); } return `Day ${offset}`; };
-        const updateDays = (v) => { totalDays.value = Math.max(1, totalDays.value + v); if(selectedDay.value > totalDays.value) selectedDay.value = totalDays.value; };
+        
+        // 核心修復：切換天數時，強制重畫圖標
+        const selectDay = (d) => {
+            selectedDay.value = d;
+            nextTick(() => { if(window.lucide) lucide.createIcons(); });
+        };
+        const updateDays = (v) => { 
+            totalDays.value = Math.max(1, totalDays.value + v); 
+            if(selectedDay.value > totalDays.value) selectedDay.value = totalDays.value; 
+            nextTick(() => { if(window.lucide) lucide.createIcons(); });
+        };
         
         const dailyItinerary = computed(() => {
             return itinerary.value.filter(i => i.day === selectedDay.value).sort((a,b) => {
@@ -583,7 +597,7 @@ const app = createApp({
 
         onMounted(() => { if(window.lucide) lucide.createIcons(); });
 
-        return { activeTripId, activeTripMeta, allTrips, showAddModal, newTripForm, addNewTrip, deleteTrip, openTrip, closeTrip, saveAllTrips, currentTab, tabs, flights, addFlight, removeFlight, calculateDuration, updateFlightTZ, totalDays, selectedDay, updateDays, dailyItinerary, addItinerary, removeItinerary, handleItineraryImageUpload, removeItineraryImage, openMap, hours, minutes, weatherData, getCurrentDate, expenses, newExp, totalExpenseTWD, saveExpense, removeExpense, expenseCategories, addCategory, commonCurrencies, groupedExpenses, rates, getCatColor, shoppingItems, shopCategories, newItem, addShopItem, removeShopItem, addShopCategory, handleShoppingImageUpload, showImage, previewImage, changeTab, transInput, transResult, transError, isTranslating, languages, transLang, swapLang, getLangName, startVoice, isListening, doTranslate, copyText, handleOCR, scanImage, updateFlightTZ, tzOffsets };
+        return { activeTripId, activeTripMeta, allTrips, showAddModal, newTripForm, addNewTrip, deleteTrip, openTrip, closeTrip, saveAllTrips, currentTab, tabs, flights, addFlight, removeFlight, calculateDuration, updateFlightTZ, totalDays, selectedDay, selectDay, updateDays, dailyItinerary, addItinerary, removeItinerary, handleItineraryImageUpload, removeItineraryImage, openMap, hours, minutes, weatherData, getCurrentDate, expenses, newExp, totalExpenseTWD, saveExpense, removeExpense, expenseCategories, addCategory, commonCurrencies, groupedExpenses, rates, getCatColor, shoppingItems, shopCategories, newItem, addShopItem, removeShopItem, addShopCategory, handleShoppingImageUpload, showImage, previewImage, changeTab, transInput, transResult, transError, isTranslating, languages, transLang, swapLang, getLangName, startVoice, isListening, doTranslate, copyText, handleOCR, scanImage, updateFlightTZ, tzOffsets };
     }
 });
 
