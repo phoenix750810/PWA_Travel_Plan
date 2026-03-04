@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Travel Master v28</title>
+    <title>Travel Master v29</title>
     
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
@@ -52,7 +52,7 @@
             <div v-for="trip in allTrips" :key="trip.id" @click="openTrip(trip)" class="home-card bg-white p-6 rounded-[30px] shadow-sm border border-[#F2EFE9] relative group cursor-pointer transition-transform active:scale-95">
                 
                 <div class="absolute top-4 right-4 flex gap-2 z-10">
-                    <button @click.stop="exportTripFromHome(trip)" class="p-2 bg-[#F0F7FF] rounded-full text-[#4285F4] hover:bg-blue-100 transition-colors" title="匯出/分享行程">
+                    <button @click.stop="openShareModal(trip)" class="p-2 bg-[#F0F7FF] rounded-full text-[#4285F4] hover:bg-blue-100 transition-colors" title="匯出/分享行程">
                         <i data-lucide="share" class="w-4 h-4"></i>
                     </button>
                     <button @click.stop="deleteTrip(trip.id)" class="p-2 bg-[#F7F5F2] rounded-full text-[#A1887F] hover:bg-red-50 hover:text-red-400 transition-colors" title="刪除行程">
@@ -104,6 +104,33 @@
                 </div>
             </div>
         </div>
+
+        <div v-if="showShareModal" class="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-end sm:items-center justify-center">
+            <div class="bg-white w-full max-w-md p-6 rounded-t-[30px] sm:rounded-[30px] shadow-2xl animate-fade-in-up">
+                <h3 class="text-xl font-bold text-[#5D4037] mb-5 text-center">選擇分享內容</h3>
+                <p class="text-xs text-center text-[#A1887F] font-bold mb-4 -mt-3">請勾選您想包含在匯出檔案中的資料</p>
+                <div class="space-y-3 mb-6">
+                    <label class="flex items-center justify-between p-3.5 bg-[#F7F5F2] rounded-2xl cursor-pointer border border-transparent hover:border-[#8EB076] transition-colors">
+                        <div class="flex items-center gap-3 font-bold text-[#5D4037]"><i data-lucide="plane" class="w-5 h-5 text-[#E8A87C]"></i>航班資訊</div>
+                        <input type="checkbox" v-model="shareOptions.flights" class="custom-checkbox">
+                    </label>
+                    <label class="flex items-center justify-between p-3.5 bg-[#F7F5F2] rounded-2xl cursor-pointer border border-transparent hover:border-[#8EB076] transition-colors">
+                        <div class="flex items-center gap-3 font-bold text-[#5D4037]"><i data-lucide="book-text" class="w-5 h-5 text-[#8EB076]"></i>行程與圖片</div>
+                        <input type="checkbox" v-model="shareOptions.itinerary" class="custom-checkbox">
+                    </label>
+                    <label class="flex items-center justify-between p-3.5 bg-[#F7F5F2] rounded-2xl cursor-pointer border border-transparent hover:border-[#8EB076] transition-colors">
+                        <div class="flex items-center gap-3 font-bold text-[#5D4037]"><i data-lucide="dollar-sign" class="w-5 h-5 text-[#4285F4]"></i>記帳明細</div>
+                        <input type="checkbox" v-model="shareOptions.expenses" class="custom-checkbox">
+                    </label>
+                    <label class="flex items-center justify-between p-3.5 bg-[#F7F5F2] rounded-2xl cursor-pointer border border-transparent hover:border-[#8EB076] transition-colors">
+                        <div class="flex items-center gap-3 font-bold text-[#5D4037]"><i data-lucide="shopping-bag" class="w-5 h-5 text-[#A1887F]"></i>購物清單</div>
+                        <input type="checkbox" v-model="shareOptions.shopping" class="custom-checkbox">
+                    </label>
+                </div>
+                <button @click="confirmExport" class="w-full py-3.5 bg-[#4285F4] text-white rounded-2xl font-bold shadow-md hover:bg-[#3367D6] transition-colors mb-2">確認匯出</button>
+                <button @click="showShareModal = false" class="w-full py-3 text-[#A1887F] font-bold">取消</button>
+            </div>
+        </div>
     </div>
 
     <div v-else>
@@ -137,7 +164,7 @@
                         </div>
                         <div class="w-1/2 text-center">
                             <label class="text-[10px] text-[#8D6E63]/60 font-bold tracking-widest block mb-1">REF</label>
-                            <input v-model="f.bookingRef" class="bg-transparent font-ticket text-lg font-bold text-[#E8A87C] w-full text-center uppercase outline-none placeholder-[#D7CCC8]" placeholder="Ref No">
+                            <input v-model="f.bookingRef" class="bg-transparent font-ticket text-lg font-bold text-[#E8A87C] w-full text-center uppercase outline-none placeholder-[#D7CCC8]" placeholder="REF No">
                         </div>
                     </div>
 
@@ -152,6 +179,7 @@
                                     </select>
                                 </div>
                             </div>
+                            
                             <div class="flex-1 flex flex-col items-center px-2 mt-2">
                                 <div class="flex items-center w-full gap-1">
                                     <div class="h-[2px] w-full bg-[#E0E0E0] rounded-full"></div>
@@ -160,6 +188,7 @@
                                 </div>
                                 <span class="text-sm font-black text-[#0033FF] mt-1">{{ calculateDuration(f) }}</span>
                             </div>
+                            
                             <div class="flex flex-col items-center w-[35%]">
                                 <input v-model="f.arrAirport" @input="updateFlightTZ(f, 'arr')" class="text-4xl font-ticket font-black text-[#6D6968] w-full text-center uppercase outline-none bg-transparent" placeholder="ARR">
                                 <input v-model="f.arrTerminal" class="mt-1 bg-transparent border-b border-dashed border-[#D7CCC8] w-full text-sm font-bold text-[#8EB076] text-center py-1 placeholder-[#BCAAA4] outline-none" placeholder="航廈">
@@ -277,7 +306,11 @@
                     <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-white rounded-full blur-3xl opacity-20"></div>
                 </div>
                 <div v-if="expenses.length > 0" class="flex justify-center py-4 bg-white rounded-[30px] shadow-sm border border-[#F2EFE9]"><div class="w-64 h-64 relative"><canvas id="expenseChart"></canvas></div></div>
-                <div class="ticket-card p-5 space-y-4 shadow-lg border-t-4 border-t-[#E8A87C]">
+                
+                <div class="ticket-card p-5 space-y-4 shadow-lg border-t-4" :class="editingExpId ? 'border-t-[#4285F4]' : 'border-t-[#E8A87C]'">
+                    <div class="flex items-center gap-2 mb-1" v-if="editingExpId">
+                        <span class="bg-[#4285F4]/10 text-[#4285F4] text-[10px] font-bold px-2 py-0.5 rounded-full tracking-wider">編輯模式 Edit Mode</span>
+                    </div>
                     <div class="flex gap-3 items-center">
                         <input type="date" v-model="newExp.date" class="bg-[#F7F5F2] p-3 rounded-2xl text-sm font-bold w-[40%] text-center font-ticket text-[#8D6E63]">
                         <div class="flex-1 bg-[#F7F5F2] rounded-2xl flex items-center pr-2 border border-transparent focus-within:bg-white focus-within:border-[#E8A87C]">
@@ -289,15 +322,29 @@
                         <select v-model="newExp.currency" class="w-24 shrink-0 bg-[#EFEBE9] text-center font-bold rounded-2xl text-[#5D4037]"><option v-for="curr in commonCurrencies" :value="curr">{{curr}}</option></select>
                     </div>
                     <input v-model="newExp.note" type="text" class="w-full bg-transparent border-b border-[#D7CCC8] p-2 text-sm text-center font-bold placeholder-[#BCAAA4]" placeholder="備註...">
-                    <button @click="saveExpense" class="w-full py-3.5 bg-[#E8A87C] text-white rounded-2xl font-bold text-lg shadow-md shadow-orange-100 hover:bg-[#F57C00]">Save Expense</button>
+                    
+                    <button v-if="!editingExpId" @click="saveExpense" class="w-full py-3.5 bg-[#E8A87C] text-white rounded-2xl font-bold text-lg shadow-md shadow-orange-100 hover:bg-[#F57C00]">新增記帳 Add Expense</button>
+                    <div v-else class="flex gap-2">
+                        <button @click="saveExpense" class="flex-1 py-3.5 bg-[#4285F4] text-white rounded-2xl font-bold text-lg shadow-md hover:bg-[#3367D6]">更新 Update</button>
+                        <button @click="cancelEditExp" class="w-1/3 py-3.5 bg-[#F7F5F2] text-[#A1887F] rounded-2xl font-bold text-lg hover:bg-gray-200">取消</button>
+                    </div>
                 </div>
+
                 <div class="space-y-4 pb-12">
                     <div v-for="(group, date) in groupedExpenses" :key="date">
                         <div class="flex items-center justify-between px-2 mb-2 border-l-4 border-[#8EB076] pl-3"><span class="text-sm font-bold text-[#8D6E63] font-ticket">{{ date }}</span><span class="text-sm font-bold text-[#5D4037]">NT$ {{ Math.round(group.totalTWD).toLocaleString() }}</span></div>
                         <div v-for="item in group.items" :key="item.id" class="bg-white p-4 mb-2 rounded-2xl flex items-center justify-between border border-[#F2EFE9] shadow-sm">
                             <div class="flex items-center gap-3"><div class="w-2.5 h-2.5 rounded-full" :class="getCatColor(item.category)"></div><div><p class="font-bold text-base text-[#5D4037]">{{ item.category }}</p><p class="text-[11px] text-[#A1887F]">{{ item.note || '-' }}</p></div></div>
-                            <div class="text-right"><p class="font-bold text-base text-[#E8A87C] font-ticket">{{ item.currency }} {{ item.amount }}</p><p class="text-[10px] font-bold text-[#BCAAA4]">≈ NT$ {{ Math.round(item.amount * (rates[item.currency] || 1)) }}</p></div>
-                            <button @click="removeExpense(item.id)" class="ml-2 text-gray-300 hover:text-red-400"><i data-lucide="x" class="w-4 h-4"></i></button>
+                            <div class="flex items-center gap-3">
+                                <div class="text-right">
+                                    <p class="font-bold text-base text-[#E8A87C] font-ticket">{{ item.currency }} {{ item.amount }}</p>
+                                    <p class="text-[10px] font-bold text-[#BCAAA4]">≈ NT$ {{ Math.round(item.amount * (rates[item.currency] || 1)) }}</p>
+                                </div>
+                                <div class="flex flex-col gap-2 border-l border-[#F2EFE9] pl-2 py-1">
+                                    <button @click="editExpense(item)" class="text-gray-300 hover:text-blue-400" title="編輯"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+                                    <button @click="removeExpense(item.id)" class="text-gray-300 hover:text-red-400" title="刪除"><i data-lucide="x" class="w-4 h-4"></i></button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -352,7 +399,7 @@
             <i data-lucide="x" class="w-6 h-6"></i>
         </button>
         <div class="w-full h-full overflow-auto flex items-center justify-center" @click.self="closeImage">
-            <img :src="previewImage" class="w-full h-auto object-contain transition-transform" @click.self="closeImage">
+            <img :src="previewImage" class="max-w-full h-auto object-contain transition-transform" @click.self="closeImage">
         </div>
     </div>
 </div>
@@ -381,6 +428,11 @@ const app = createApp({
         const showAddModal = ref(false);
         const newTripForm = ref({ name: '', startDate: '', endDate: '' });
 
+        // Share functionality state
+        const showShareModal = ref(false);
+        const tripToShare = ref(null);
+        const shareOptions = ref({ flights: true, itinerary: true, expenses: true, shopping: true });
+
         const flights = ref([]);
         const totalDays = ref(5);
         const selectedDay = ref(1);
@@ -388,6 +440,7 @@ const app = createApp({
         const expenses = ref([]);
         const expenseCategories = ref([]);
         const newExp = ref({ date: '', category:'餐飲', amount:null, currency:'TWD', note:'' });
+        const editingExpId = ref(null); // 用於追蹤正在編輯的記帳項目 ID
         const shoppingItems = ref([]);
         const shopCategories = ref([]);
         const newItem = ref({ name:'', cat:'藥妝', image: null });
@@ -559,12 +612,89 @@ const app = createApp({
         const addCategory = () => { const c = prompt("新類別:"); if(c&&c.trim()){ expenseCategories.value.push(c); newExp.value.category=c; }};
         const totalExpenseTWD = computed(() => expenses.value.reduce((s, e) => s + (e.amount * (rates[e.currency] || 1)), 0));
         const groupedExpenses = computed(() => { const g = {}; expenses.value.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(e => { const d = e.date || '其他'; if(!g[d]) g[d] = {items:[], totalTWD:0}; g[d].items.push(e); g[d].totalTWD += e.amount * (rates[e.currency]||1); }); return g; });
-        const saveExpense = () => { if(newExp.value.amount) { expenses.value.push({...newExp.value, id:Date.now()}); newExp.value.amount = null; newExp.value.note = ''; renderChart(); nextTick(() => { if(window.lucide) lucide.createIcons(); }); }};
+        
+        // ======== 編輯記帳邏輯 ========
+        const editExpense = (item) => {
+            newExp.value = { ...item };
+            editingExpId.value = item.id;
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // 滾動回上方填寫區
+        };
+        
+        const cancelEditExp = () => {
+            editingExpId.value = null;
+            newExp.value = { date: activeTripMeta.value.startDate || new Date().toISOString().split('T')[0], category:'餐飲', amount:null, currency:'TWD', note:'' };
+        };
+
+        const saveExpense = () => { 
+            if(newExp.value.amount) { 
+                if (editingExpId.value) {
+                    // 更新模式
+                    const idx = expenses.value.findIndex(e => e.id === editingExpId.value);
+                    if(idx !== -1) {
+                        expenses.value[idx] = { ...newExp.value };
+                    }
+                    editingExpId.value = null;
+                } else {
+                    // 新增模式
+                    expenses.value.push({...newExp.value, id:Date.now()}); 
+                }
+                
+                // 重置輸入框金額和備註，保留日期和幣別方便連續輸入
+                newExp.value.amount = null; 
+                newExp.value.note = ''; 
+                renderChart(); 
+                nextTick(() => { if(window.lucide) lucide.createIcons(); }); 
+            }
+        };
         const removeExpense = (id) => { expenses.value = expenses.value.filter(e => e.id !== id); renderChart(); };
+        
         const kawaiiColors = { '餐飲':'#E8A87C', '交通':'#8EB076', '住宿':'#5D4037', '活動':'#4285F4', '購物':'#A1887F' };
         const getCatColor = (c) => kawaiiColors[c] ? `bg-[${kawaiiColors[c]}]` : 'bg-gray-400';
+        
         let chartObj = null;
-        const renderChart = () => { nextTick(() => { const ctx = document.getElementById('expenseChart'); if(!ctx || expenses.value.length === 0) return; if(chartObj) chartObj.destroy(); const totals = {}; expenseCategories.value.forEach(c => totals[c] = 0); expenses.value.forEach(e => { const val = e.amount * (rates[e.currency] || 1); if(totals[e.category]!==undefined) totals[e.category] += val; else totals['其他'] = (totals['其他']||0)+val; }); const labels = Object.keys(totals).filter(k => totals[k] > 0); const data = labels.map(k => totals[k]); const bgColors = labels.map(l => kawaiiColors[l] || '#CFD8DC'); const percentages = data.map(v => ((v/totalExpenseTWD.value)*100).toFixed(1) + '%'); chartObj = new Chart(ctx, { type:'doughnut', data: { labels, datasets:[{ data, backgroundColor: bgColors, borderWidth:0 }] }, options: { cutout:'65%', plugins: { legend:{ display:true, position:'bottom', labels:{ boxWidth:10, usePointStyle:true, font:{size:12, family:"'Quicksand'"} } }, datalabels: { color:'#5D4037', font:{weight:'bold'}, formatter: (val, ctx) => percentages[ctx.dataIndex] } } } }); }); };
+        const renderChart = () => { 
+            nextTick(() => { 
+                const ctx = document.getElementById('expenseChart'); 
+                if(!ctx || expenses.value.length === 0) return; 
+                if(chartObj) chartObj.destroy(); 
+                
+                const totals = {}; 
+                expenseCategories.value.forEach(c => totals[c] = 0); 
+                expenses.value.forEach(e => { 
+                    const val = e.amount * (rates[e.currency] || 1); 
+                    if(totals[e.category]!==undefined) totals[e.category] += val; 
+                    else totals['其他'] = (totals['其他']||0)+val; 
+                }); 
+                
+                const labels = Object.keys(totals).filter(k => totals[k] > 0); 
+                const data = labels.map(k => totals[k]); 
+                const bgColors = labels.map(l => kawaiiColors[l] || '#CFD8DC'); 
+                const percentages = data.map(v => ((v/totalExpenseTWD.value)*100).toFixed(1) + '%'); 
+                
+                chartObj = new Chart(ctx, { 
+                    type:'doughnut', 
+                    data: { labels, datasets:[{ data, backgroundColor: bgColors, borderWidth:0 }] }, 
+                    options: { 
+                        cutout:'65%', 
+                        plugins: { 
+                            legend:{ display:true, position:'bottom', labels:{ boxWidth:10, usePointStyle:true, font:{size:12, family:"'Quicksand'"} } }, 
+                            datalabels: { 
+                                color:'#5D4037', 
+                                font:{weight:'bold', size: 11}, 
+                                textAlign: 'center', // 置中對齊
+                                formatter: (val, ctx) => { 
+                                    // 顯示：類別 \n $金額 \n (百分比)
+                                    const cat = ctx.chart.data.labels[ctx.dataIndex];
+                                    const percent = percentages[ctx.dataIndex];
+                                    const amount = Math.round(val).toLocaleString();
+                                    return `${cat}\n$${amount}\n(${percent})`; 
+                                } 
+                            } 
+                        } 
+                    } 
+                }); 
+            }); 
+        };
 
         const addShopCategory = () => { const c = prompt("新增類別:"); if(c&&c.trim()){ if(!shopCategories.value.includes(c)) shopCategories.value.push(c); newItem.value.cat = c; }};
         const handleShoppingImageUpload = async (e) => { 
@@ -580,24 +710,16 @@ const app = createApp({
         const addShopItem = () => { if(newItem.value.name) { shoppingItems.value.push({...newItem.value, id:Date.now(), done:false}); newItem.value.name=''; newItem.value.image=null; nextTick(() => { if(window.lucide) lucide.createIcons(); }); }};
         const removeShopItem = (id) => shoppingItems.value = shoppingItems.value.filter(i => i.id !== id);
         
-        // 🚀 動態解鎖手機原生縮放功能
         const showImage = (img) => {
             previewImage.value = img;
             const viewport = document.querySelector('meta[name="viewport"]');
-            if(viewport) {
-                // 解鎖：允許最大放大 5 倍
-                viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
-            }
+            if(viewport) viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
             nextTick(() => { if(window.lucide) lucide.createIcons(); });
         };
-
         const closeImage = () => {
             previewImage.value = null;
             const viewport = document.querySelector('meta[name="viewport"]');
-            if(viewport) {
-                // 鎖定：恢復正常，防誤觸縮放
-                viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
-            }
+            if(viewport) viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
         };
 
         const getLangName = (code) => languages.find(l => l.code === code)?.name || '';
@@ -610,18 +732,32 @@ const app = createApp({
 
         const changeTab = (id) => { currentTab.value = id; if(id === 'expense') renderChart(); nextTick(() => { if(window.lucide) lucide.createIcons(); }); };
 
-        const exportTripFromHome = (trip) => {
+        // ======== 彈性分享邏輯 ========
+        const openShareModal = (trip) => {
+            tripToShare.value = trip;
+            // 預設全勾選
+            shareOptions.value = { flights: true, itinerary: true, expenses: true, shopping: true };
+            showShareModal.value = true;
+            nextTick(() => { if(window.lucide) lucide.createIcons(); });
+        };
+
+        const confirmExport = () => {
+            if(!tripToShare.value) return;
+            const trip = tripToShare.value;
             try {
+                // 根據勾選狀態決定要匯出哪些資料
                 const tripData = {
                     meta: trip,
-                    flights: JSON.parse(localStorage.getItem(`TRIP_${trip.id}_F`)) || [],
-                    itinerary: JSON.parse(localStorage.getItem(`TRIP_${trip.id}_I`)) || [],
-                    expenses: JSON.parse(localStorage.getItem(`TRIP_${trip.id}_E`)) || [],
-                    shopping: JSON.parse(localStorage.getItem(`TRIP_${trip.id}_S`)) || [],
+                    flights: shareOptions.value.flights ? (JSON.parse(localStorage.getItem(`TRIP_${trip.id}_F`)) || []) : [],
+                    itinerary: shareOptions.value.itinerary ? (JSON.parse(localStorage.getItem(`TRIP_${trip.id}_I`)) || []) : [],
+                    expenses: shareOptions.value.expenses ? (JSON.parse(localStorage.getItem(`TRIP_${trip.id}_E`)) || []) : [],
+                    shopping: shareOptions.value.shopping ? (JSON.parse(localStorage.getItem(`TRIP_${trip.id}_S`)) || []) : [],
                     totalDays: parseInt(localStorage.getItem(`TRIP_${trip.id}_D`)) || 5,
+                    // 為了避免匯入後缺少類別，類別設定一律跟隨匯出
                     expenseCategories: JSON.parse(localStorage.getItem(`TRIP_${trip.id}_EC`)) || ['餐飲','交通','住宿','活動','購物'],
                     shopCategories: JSON.parse(localStorage.getItem(`TRIP_${trip.id}_SC`)) || ['藥妝', '零食', '精品']
                 };
+                
                 const dataStr = JSON.stringify(tripData);
                 const blob = new Blob([dataStr], { type: "application/json" });
                 const url = URL.createObjectURL(blob);
@@ -630,6 +766,7 @@ const app = createApp({
                 a.download = `Trip_${trip.name || 'Export'}.json`;
                 a.click();
                 URL.revokeObjectURL(url);
+                showShareModal.value = false;
             } catch(e) {
                 alert("匯出失敗，請確認資料是否完整。");
             }
@@ -690,7 +827,16 @@ const app = createApp({
 
         onMounted(() => { if(window.lucide) lucide.createIcons(); });
 
-        return { activeTripId, activeTripMeta, allTrips, showAddModal, newTripForm, addNewTrip, deleteTrip, openTrip, closeTrip, saveAllTrips, currentTab, tabs, flights, addFlight, removeFlight, calculateDuration, updateFlightTZ, totalDays, selectedDay, selectDay, updateDays, dailyItinerary, addItinerary, removeItinerary, handleItineraryImageUpload, removeItineraryImage, openMap, hours, minutes, weatherData, getCurrentDate, expenses, newExp, totalExpenseTWD, saveExpense, removeExpense, expenseCategories, addCategory, commonCurrencies, groupedExpenses, rates, getCatColor, shoppingItems, shopCategories, newItem, addShopItem, removeShopItem, addShopCategory, handleShoppingImageUpload, showImage, closeImage, previewImage, changeTab, transInput, transResult, transError, isTranslating, languages, transLang, swapLang, getLangName, startVoice, isListening, doTranslate, copyText, handleOCR, scanImage, updateFlightTZ, tzOffsets, exportTripFromHome, importTrip };
+        return { 
+            activeTripId, activeTripMeta, allTrips, showAddModal, newTripForm, addNewTrip, deleteTrip, openTrip, closeTrip, saveAllTrips, 
+            currentTab, tabs, flights, addFlight, removeFlight, calculateDuration, updateFlightTZ, totalDays, selectedDay, selectDay, updateDays, 
+            dailyItinerary, addItinerary, removeItinerary, handleItineraryImageUpload, removeItineraryImage, openMap, hours, minutes, weatherData, getCurrentDate, 
+            expenses, newExp, editingExpId, editExpense, cancelEditExp, totalExpenseTWD, saveExpense, removeExpense, expenseCategories, addCategory, commonCurrencies, groupedExpenses, rates, getCatColor, 
+            shoppingItems, shopCategories, newItem, addShopItem, removeShopItem, addShopCategory, handleShoppingImageUpload, showImage, closeImage, previewImage, 
+            changeTab, transInput, transResult, transError, isTranslating, languages, transLang, swapLang, getLangName, startVoice, isListening, doTranslate, copyText, handleOCR, scanImage, 
+            updateFlightTZ, tzOffsets, 
+            showShareModal, tripToShare, shareOptions, openShareModal, confirmExport, importTrip 
+        };
     }
 });
 
