@@ -569,23 +569,36 @@ const app = createApp({
         const deleteTrip = (id) => {
             if(!confirm("確定要刪除這個行程嗎？")) return;
             allTrips.value = allTrips.value.filter(t => t.id !== id);
-            localStorage.removeItem(`TRIP_${id}_F`); localStorage.removeItem(`TRIP_${id}_I`); localStorage.removeItem(`TRIP_${id}_E`); localStorage.removeItem(`TRIP_${id}_S`); localStorage.removeItem(`TRIP_${id}_P`);
+            
+            // 完整清除所有相關的 localStorage 紀錄
+            const keys = ['F', 'I', 'E', 'S', 'P', 'D', 'EC', 'SC', 'PC'];
+            keys.forEach(k => localStorage.removeItem(`TRIP_${id}_${k}`));
+            
             saveAllTrips();
         };
 
         // 開啟行程
         const openTrip = (trip) => {
             activeTripId.value = trip.id; activeTripMeta.value = trip;
-            try { flights.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_F`)) || []; } catch(e) { flights.value = []; }
-            try { itinerary.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_I`)) || []; itinerary.value.forEach(i => { if(!i.images) i.images = []; }); } catch(e) { itinerary.value = []; }
-            try { expenses.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_E`)) || []; } catch(e) { expenses.value = []; }
-            try { shoppingItems.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_S`)) || []; } catch(e) { shoppingItems.value = []; }
-            try { packItems.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_P`)) || []; } catch(e) { packItems.value = []; }
+            
+            const safeParse = (key, fallback) => {
+                try {
+                    const val = localStorage.getItem(key);
+                    return val ? JSON.parse(val) : fallback;
+                } catch(e) { return fallback; }
+            };
+
+            flights.value = safeParse(`TRIP_${trip.id}_F`, []);
+            itinerary.value = safeParse(`TRIP_${trip.id}_I`, []);
+            itinerary.value.forEach(i => { if(!i.images) i.images = []; });
+            expenses.value = safeParse(`TRIP_${trip.id}_E`, []);
+            shoppingItems.value = safeParse(`TRIP_${trip.id}_S`, []);
+            packItems.value = safeParse(`TRIP_${trip.id}_P`, []);
 
             totalDays.value = parseInt(localStorage.getItem(`TRIP_${trip.id}_D`)) || 5;
-            expenseCategories.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_EC`)) || ['餐飲','交通','住宿','活動','購物'];
-            shopCategories.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_SC`)) || ['藥妝', '零食', '精品'];
-            packCategories.value = JSON.parse(localStorage.getItem(`TRIP_${trip.id}_PC`)) || ['證件', '電子', '衣物', '盥洗'];
+            expenseCategories.value = safeParse(`TRIP_${trip.id}_EC`, ['餐飲','交通','住宿','活動','購物']);
+            shopCategories.value = safeParse(`TRIP_${trip.id}_SC`, ['藥妝', '零食', '精品']);
+            packCategories.value = safeParse(`TRIP_${trip.id}_PC`, ['證件', '電子', '衣物', '盥洗']);
             
             newExp.value.date = trip.startDate || new Date().toISOString().split('T')[0];
             nextTick(() => { lucide.createIcons(); if (currentTab.value === 'expense') renderChart(); });
@@ -781,17 +794,26 @@ const app = createApp({
         watch([flights, itinerary, expenses, shoppingItems, packItems, totalDays, expenseCategories, shopCategories, packCategories, activeTripMeta], () => {
             if(!activeTripId.value) return;
             saveAllTrips();
-            try {
-                localStorage.setItem(`TRIP_${activeTripId.value}_F`, JSON.stringify(flights.value));
-                localStorage.setItem(`TRIP_${activeTripId.value}_I`, JSON.stringify(itinerary.value));
-                localStorage.setItem(`TRIP_${activeTripId.value}_E`, JSON.stringify(expenses.value));
-                localStorage.setItem(`TRIP_${activeTripId.value}_S`, JSON.stringify(shoppingItems.value));
-                localStorage.setItem(`TRIP_${activeTripId.value}_P`, JSON.stringify(packItems.value));
-                localStorage.setItem(`TRIP_${activeTripId.value}_D`, totalDays.value);
-                localStorage.setItem(`TRIP_${activeTripId.value}_EC`, JSON.stringify(expenseCategories.value));
-                localStorage.setItem(`TRIP_${activeTripId.value}_SC`, JSON.stringify(shopCategories.value));
-                localStorage.setItem(`TRIP_${activeTripId.value}_PC`, JSON.stringify(packCategories.value));
-            } catch (e) {}
+            
+            // 建立安全的儲存機制
+            const safeSet = (key, val) => {
+                try { localStorage.setItem(key, val); } 
+                catch(e) { console.warn(`儲存 ${key} 失敗 (可能是圖片容量過大):`, e); }
+            };
+
+            // 優先儲存體積小的重要設定與類別
+            safeSet(`TRIP_${activeTripId.value}_F`, JSON.stringify(flights.value));
+            safeSet(`TRIP_${activeTripId.value}_D`, totalDays.value);
+            safeSet(`TRIP_${activeTripId.value}_EC`, JSON.stringify(expenseCategories.value));
+            safeSet(`TRIP_${activeTripId.value}_SC`, JSON.stringify(shopCategories.value));
+            safeSet(`TRIP_${activeTripId.value}_PC`, JSON.stringify(packCategories.value));
+            safeSet(`TRIP_${activeTripId.value}_E`, JSON.stringify(expenses.value));
+            safeSet(`TRIP_${activeTripId.value}_P`, JSON.stringify(packItems.value));
+            
+            // 最後儲存可能包含大量圖片的陣列
+            safeSet(`TRIP_${activeTripId.value}_I`, JSON.stringify(itinerary.value));
+            safeSet(`TRIP_${activeTripId.value}_S`, JSON.stringify(shoppingItems.value));
+            
         }, { deep: true });
 
         onMounted(() => { if(window.lucide) lucide.createIcons(); });
@@ -819,3 +841,4 @@ app.mount('#app');
 </script>
 </body>
 </html>
+ in
