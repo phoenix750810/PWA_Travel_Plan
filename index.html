@@ -261,14 +261,29 @@
                             <input v-model="item.location" class="flex-1 text-lg font-bold bg-transparent placeholder-[#BCAAA4]" placeholder="行程名稱...">
                             <button @click="removeItinerary(item.id)" class="text-[#D7CCC8] hover:text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </div>
-                        <button @click="openMap(item.landmark)" class="w-full bg-[#E3F2FD] p-2.5 rounded-xl flex items-center gap-2 text-[#1565C0] font-bold border border-[#BBDEFB]">
-                            <i data-lucide="map-pinned" class="w-4 h-4 shrink-0"></i><input v-model="item.landmark" @click.stop class="flex-1 bg-transparent placeholder-[#90CAF9] text-xs font-bold p-0" placeholder="搜尋地標 (開啟地圖)">
-                        </button>
                         
-                        <div v-if="item.notes || (item.images && item.images.length > 0) || item.isEditingDetails" class="space-y-2 transition-all">
-                            <textarea v-model="item.notes" v-auto-height class="w-full bg-[#F7F5F2] p-3 rounded-xl text-sm min-h-[50px] resize-none border-none placeholder-[#D7CCC8]" placeholder="備註..."></textarea>
-                            
-                            <div class="flex flex-wrap gap-2">
+                        <div v-if="item.showMap || item.landmark" class="relative group">
+                            <button @click="openMap(item.landmark)" class="w-full bg-[#E3F2FD] p-2.5 pr-8 rounded-xl flex items-center gap-2 text-[#1565C0] font-bold border border-[#BBDEFB]">
+                                <i data-lucide="map-pinned" class="w-4 h-4 shrink-0"></i>
+                                <input v-model="item.landmark" @click.stop class="flex-1 bg-transparent placeholder-[#90CAF9] text-xs font-bold p-0" placeholder="搜尋地標 (開啟地圖)">
+                            </button>
+                            <button @click.stop="item.showMap = false; item.landmark = ''" class="absolute right-2 top-1/2 -translate-y-1/2 text-blue-300 hover:text-red-400 p-1 bg-[#E3F2FD] rounded-full">
+                                <i data-lucide="x" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+
+                        <div v-if="item.showNotes || item.notes" class="relative group">
+                            <textarea v-model="item.notes" v-auto-height class="w-full bg-[#F7F5F2] p-3 pr-8 rounded-xl text-sm min-h-[50px] resize-none border-none placeholder-[#D7CCC8]" placeholder="備註..."></textarea>
+                            <button @click.stop="item.showNotes = false; item.notes = ''" class="absolute right-2 top-2 text-[#D7CCC8] hover:text-red-400 p-1 bg-[#F7F5F2] rounded-full">
+                                <i data-lucide="x" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        
+                        <div v-if="item.showImages || (item.images && item.images.length > 0)" class="relative bg-[#F7F5F2] p-2 rounded-xl border border-transparent">
+                            <button @click.stop="item.showImages = false; item.images = []" class="absolute right-1 top-1 text-[#D7CCC8] hover:text-red-400 p-1 z-10">
+                                <i data-lucide="x" class="w-4 h-4"></i>
+                            </button>
+                            <div class="flex flex-wrap gap-2 pr-6">
                                 <div v-for="(img, idx) in item.images" :key="idx" class="relative w-12 h-12 rounded-xl border border-gray-200 shadow-sm shrink-0">
                                     <div class="w-full h-full bg-cover bg-center rounded-xl cursor-zoom-in" :style="{backgroundImage: `url(${img})`}" @click="showImage(img)"></div>
                                     <button @click.stop="removeItineraryImage(item, idx)" class="absolute -top-1.5 -right-1.5 bg-white text-red-400 rounded-full shadow-sm hover:text-red-600 border border-gray-100 flex items-center justify-center w-4 h-4">
@@ -280,18 +295,19 @@
                                     <input type="file" accept="image/*" class="hidden" @change="handleItineraryImageUpload($event, item)">
                                 </label>
                             </div>
-
-                            <div v-if="!item.notes && (!item.images || item.images.length === 0)" class="flex justify-end mt-1">
-                                <button @click="item.isEditingDetails = false" class="text-[11px] font-bold text-[#A1887F] flex items-center gap-1 hover:text-[#5D4037]">
-                                    <i data-lucide="chevron-up" class="w-3.5 h-3.5"></i> 收起
-                                </button>
-                            </div>
                         </div>
 
-                        <button v-else @click="item.isEditingDetails = true; $nextTick(() => { if(window.lucide) window.lucide.createIcons() })" class="text-[11px] font-bold text-[#A1887F] flex items-center gap-1.5 hover:text-[#8EB076] transition-colors bg-[#F7F5F2] px-3 py-1.5 rounded-lg w-fit mt-1">
-                            <i data-lucide="file-plus-2" class="w-3.5 h-3.5"></i> 新增備註 / 照片
-                        </button>
-                        
+                        <div v-if="!(item.showMap || item.landmark) || !(item.showNotes || item.notes) || !(item.showImages || (item.images && item.images.length > 0))" class="flex gap-2 pt-1">
+                            <button v-if="!(item.showMap || item.landmark)" @click="item.showMap = true; $nextTick(() => { if(window.lucide) window.lucide.createIcons() })" class="flex-1 text-[11px] font-bold text-[#A1887F] bg-[#F7F5F2] hover:bg-[#E3F2FD] hover:text-[#1565C0] py-1.5 rounded-lg flex items-center justify-center gap-1 transition-colors">
+                                <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> 地圖
+                            </button>
+                            <button v-if="!(item.showNotes || item.notes)" @click="item.showNotes = true; $nextTick(() => { if(window.lucide) window.lucide.createIcons() })" class="flex-1 text-[11px] font-bold text-[#A1887F] bg-[#F7F5F2] hover:bg-gray-100 py-1.5 rounded-lg flex items-center justify-center gap-1 transition-colors">
+                                <i data-lucide="file-text" class="w-3.5 h-3.5"></i> 備註
+                            </button>
+                            <button v-if="!(item.showImages || (item.images && item.images.length > 0))" @click="item.showImages = true; $nextTick(() => { if(window.lucide) window.lucide.createIcons() })" class="flex-1 text-[11px] font-bold text-[#A1887F] bg-[#F7F5F2] hover:bg-gray-100 py-1.5 rounded-lg flex items-center justify-center gap-1 transition-colors">
+                                <i data-lucide="image" class="w-3.5 h-3.5"></i> 圖片
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <button @click="addItinerary" class="w-full py-3 border-2 border-dashed border-[#D7CCC8] rounded-2xl text-[#A1887F] font-bold hover:border-[#8EB076] transition-colors">+ 新增行程</button>
@@ -535,7 +551,7 @@ const app = createApp({
         const minutes = Array.from({length: 12}, (_, i) => (i * 5).toString().padStart(2, '0'));
         const tzOffsets = Array.from({length: 27}, (_, i) => i - 12); 
 
-        // 天氣預報 (v28 原生邏輯)
+        // 天氣預報
         const generateWeather = () => {
             const now = new Date(); const currentHour = now.getHours(); const hourly = [];
             for(let i=1; i<=8; i++) {
@@ -548,12 +564,12 @@ const app = createApp({
         };
         const weatherData = ref(generateWeather());
 
-        // 翻譯 (v28 邏輯)
+        // 翻譯
         const transInput = ref(''); const transResult = ref(''); const transError = ref(''); const isTranslating = ref(false);
         const languages = [{code:'zh-TW', name:'中文'}, {code:'en-US', name:'英文'}, {code:'ja-JP', name:'日文'}, {code:'ko-KR', name:'韓文'}, {code:'th-TH', name:'泰文'}];
         const transLang = ref({ from: 'zh-TW', to: 'en-US' }); const isListening = ref(false); const scanImage = ref(null);
 
-        // 圖片壓縮 (v28 邏輯)
+        // 圖片壓縮
         const compressImage = (file, maxWidth = 800) => {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -584,7 +600,6 @@ const app = createApp({
             if(!confirm("確定要刪除這個行程嗎？")) return;
             allTrips.value = allTrips.value.filter(t => t.id !== id);
             
-            // 完整清除所有相關的 localStorage 紀錄
             const keys = ['F', 'I', 'E', 'S', 'P', 'D', 'EC', 'SC', 'PC'];
             keys.forEach(k => localStorage.removeItem(`TRIP_${id}_${k}`));
             
@@ -606,7 +621,10 @@ const app = createApp({
             itinerary.value = safeParse(`TRIP_${trip.id}_I`, []);
             itinerary.value.forEach(i => { 
                 if(!i.images) i.images = []; 
-                if(i.isEditingDetails === undefined) i.isEditingDetails = false;
+                // 相容舊資料並初始化狀態開關
+                if(i.showMap === undefined) i.showMap = !!i.landmark;
+                if(i.showNotes === undefined) i.showNotes = !!i.notes;
+                if(i.showImages === undefined) i.showImages = i.images && i.images.length > 0;
             });
             expenses.value = safeParse(`TRIP_${trip.id}_E`, []);
             shoppingItems.value = safeParse(`TRIP_${trip.id}_S`, []);
@@ -645,7 +663,7 @@ const app = createApp({
         const selectDay = (d) => { selectedDay.value = d; nextTick(() => lucide.createIcons()); };
         const updateDays = (v) => { totalDays.value = Math.max(1, totalDays.value + v); if(selectedDay.value > totalDays.value) selectedDay.value = totalDays.value; nextTick(() => lucide.createIcons()); };
         const dailyItinerary = computed(() => itinerary.value.filter(i => i.day === selectedDay.value).sort((a,b) => ((a.hour||'ZZ')+(a.minute||'ZZ')).localeCompare((b.hour||'ZZ')+(b.minute||'ZZ'))));
-        const addItinerary = () => { itinerary.value.push({ id:Date.now(), day:selectedDay.value, hour:'', minute:'', location:'', landmark:'', notes:'', images: [], isEditingDetails: false }); nextTick(() => lucide.createIcons()); };
+        const addItinerary = () => { itinerary.value.push({ id:Date.now(), day:selectedDay.value, hour:'', minute:'', location:'', landmark:'', notes:'', images: [], showMap: false, showNotes: false, showImages: false }); nextTick(() => lucide.createIcons()); };
         const removeItinerary = (id) => itinerary.value = itinerary.value.filter(i => i.id !== id);
         const handleItineraryImageUpload = async (e, item) => {
             const file = e.target.files[0]; if (!file) return;
@@ -668,7 +686,7 @@ const app = createApp({
         const addShopItem = () => { if(newItem.value.name) { shoppingItems.value.push({...newItem.value, id:Date.now(), done:false}); newItem.value.name=''; newItem.value.image=null; nextTick(() => lucide.createIcons()); }};
         const removeShopItem = (id) => shoppingItems.value = shoppingItems.value.filter(i => i.id !== id);
 
-        // 💰 記帳邏輯 (Chart.js 防白屏處理)
+        // 💰 記帳邏輯
         const addCategory = () => { const c = prompt("新類別:"); if(c&&c.trim() && !expenseCategories.value.includes(c)){ expenseCategories.value.push(c); newExp.value.category=c; }};
         const removeExpCat = (cat) => { if(confirm(`刪除類別「${cat}」？`)) expenseCategories.value = expenseCategories.value.filter(c => c !== cat); };
         const totalExpenseTWD = computed(() => expenses.value.reduce((s, e) => s + (e.amount * (rates[e.currency] || 1)), 0));
@@ -812,13 +830,11 @@ const app = createApp({
             if(!activeTripId.value) return;
             saveAllTrips();
             
-            // 建立安全的儲存機制
             const safeSet = (key, val) => {
                 try { localStorage.setItem(key, val); } 
                 catch(e) { console.warn(`儲存 ${key} 失敗 (可能是圖片容量過大):`, e); }
             };
 
-            // 優先儲存體積小的重要設定與類別
             safeSet(`TRIP_${activeTripId.value}_F`, JSON.stringify(flights.value));
             safeSet(`TRIP_${activeTripId.value}_D`, totalDays.value);
             safeSet(`TRIP_${activeTripId.value}_EC`, JSON.stringify(expenseCategories.value));
@@ -826,8 +842,6 @@ const app = createApp({
             safeSet(`TRIP_${activeTripId.value}_PC`, JSON.stringify(packCategories.value));
             safeSet(`TRIP_${activeTripId.value}_E`, JSON.stringify(expenses.value));
             safeSet(`TRIP_${activeTripId.value}_P`, JSON.stringify(packItems.value));
-            
-            // 最後儲存可能包含大量圖片的陣列
             safeSet(`TRIP_${activeTripId.value}_I`, JSON.stringify(itinerary.value));
             safeSet(`TRIP_${activeTripId.value}_S`, JSON.stringify(shoppingItems.value));
             
