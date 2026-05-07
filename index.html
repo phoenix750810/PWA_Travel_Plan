@@ -264,20 +264,34 @@
                         <button @click="openMap(item.landmark)" class="w-full bg-[#E3F2FD] p-2.5 rounded-xl flex items-center gap-2 text-[#1565C0] font-bold border border-[#BBDEFB]">
                             <i data-lucide="map-pinned" class="w-4 h-4 shrink-0"></i><input v-model="item.landmark" @click.stop class="flex-1 bg-transparent placeholder-[#90CAF9] text-xs font-bold p-0" placeholder="搜尋地標 (開啟地圖)">
                         </button>
-                        <textarea v-model="item.notes" v-auto-height class="w-full bg-[#F7F5F2] p-3 rounded-xl text-sm min-h-[50px] resize-none border-none placeholder-[#D7CCC8]" placeholder="備註..."></textarea>
                         
-                        <div class="pt-1 flex flex-wrap gap-2">
-                            <div v-for="(img, idx) in item.images" :key="idx" class="relative w-12 h-12 rounded-xl border border-gray-200 shadow-sm shrink-0">
-                                <div class="w-full h-full bg-cover bg-center rounded-xl cursor-zoom-in" :style="{backgroundImage: `url(${img})`}" @click="showImage(img)"></div>
-                                <button @click.stop="removeItineraryImage(item, idx)" class="absolute -top-1.5 -right-1.5 bg-white text-red-400 rounded-full shadow-sm hover:text-red-600 border border-gray-100 flex items-center justify-center w-4 h-4">
-                                    <i data-lucide="x" class="w-3 h-3"></i>
+                        <div v-if="item.notes || (item.images && item.images.length > 0) || item.isEditingDetails" class="space-y-2 transition-all">
+                            <textarea v-model="item.notes" v-auto-height class="w-full bg-[#F7F5F2] p-3 rounded-xl text-sm min-h-[50px] resize-none border-none placeholder-[#D7CCC8]" placeholder="備註..."></textarea>
+                            
+                            <div class="flex flex-wrap gap-2">
+                                <div v-for="(img, idx) in item.images" :key="idx" class="relative w-12 h-12 rounded-xl border border-gray-200 shadow-sm shrink-0">
+                                    <div class="w-full h-full bg-cover bg-center rounded-xl cursor-zoom-in" :style="{backgroundImage: `url(${img})`}" @click="showImage(img)"></div>
+                                    <button @click.stop="removeItineraryImage(item, idx)" class="absolute -top-1.5 -right-1.5 bg-white text-red-400 rounded-full shadow-sm hover:text-red-600 border border-gray-100 flex items-center justify-center w-4 h-4">
+                                        <i data-lucide="x" class="w-3 h-3"></i>
+                                    </button>
+                                </div>
+                                <label class="w-12 h-12 rounded-xl border-2 border-dashed border-[#D7CCC8] bg-[#FDFBF7] flex items-center justify-center text-[#A1887F] cursor-pointer hover:border-[#8EB076] transition-colors shrink-0">
+                                    <i data-lucide="plus" class="w-5 h-5"></i>
+                                    <input type="file" accept="image/*" class="hidden" @change="handleItineraryImageUpload($event, item)">
+                                </label>
+                            </div>
+
+                            <div v-if="!item.notes && (!item.images || item.images.length === 0)" class="flex justify-end mt-1">
+                                <button @click="item.isEditingDetails = false" class="text-[11px] font-bold text-[#A1887F] flex items-center gap-1 hover:text-[#5D4037]">
+                                    <i data-lucide="chevron-up" class="w-3.5 h-3.5"></i> 收起
                                 </button>
                             </div>
-                            <label class="w-12 h-12 rounded-xl border-2 border-dashed border-[#D7CCC8] bg-[#FDFBF7] flex items-center justify-center text-[#A1887F] cursor-pointer hover:border-[#8EB076] transition-colors shrink-0">
-                                <i data-lucide="plus" class="w-5 h-5"></i>
-                                <input type="file" accept="image/*" class="hidden" @change="handleItineraryImageUpload($event, item)">
-                            </label>
                         </div>
+
+                        <button v-else @click="item.isEditingDetails = true; $nextTick(() => { if(window.lucide) window.lucide.createIcons() })" class="text-[11px] font-bold text-[#A1887F] flex items-center gap-1.5 hover:text-[#8EB076] transition-colors bg-[#F7F5F2] px-3 py-1.5 rounded-lg w-fit mt-1">
+                            <i data-lucide="file-plus-2" class="w-3.5 h-3.5"></i> 新增備註 / 照片
+                        </button>
+                        
                     </div>
                 </div>
                 <button @click="addItinerary" class="w-full py-3 border-2 border-dashed border-[#D7CCC8] rounded-2xl text-[#A1887F] font-bold hover:border-[#8EB076] transition-colors">+ 新增行程</button>
@@ -590,7 +604,10 @@ const app = createApp({
 
             flights.value = safeParse(`TRIP_${trip.id}_F`, []);
             itinerary.value = safeParse(`TRIP_${trip.id}_I`, []);
-            itinerary.value.forEach(i => { if(!i.images) i.images = []; });
+            itinerary.value.forEach(i => { 
+                if(!i.images) i.images = []; 
+                if(i.isEditingDetails === undefined) i.isEditingDetails = false;
+            });
             expenses.value = safeParse(`TRIP_${trip.id}_E`, []);
             shoppingItems.value = safeParse(`TRIP_${trip.id}_S`, []);
             packItems.value = safeParse(`TRIP_${trip.id}_P`, []);
@@ -628,7 +645,7 @@ const app = createApp({
         const selectDay = (d) => { selectedDay.value = d; nextTick(() => lucide.createIcons()); };
         const updateDays = (v) => { totalDays.value = Math.max(1, totalDays.value + v); if(selectedDay.value > totalDays.value) selectedDay.value = totalDays.value; nextTick(() => lucide.createIcons()); };
         const dailyItinerary = computed(() => itinerary.value.filter(i => i.day === selectedDay.value).sort((a,b) => ((a.hour||'ZZ')+(a.minute||'ZZ')).localeCompare((b.hour||'ZZ')+(b.minute||'ZZ'))));
-        const addItinerary = () => { itinerary.value.push({ id:Date.now(), day:selectedDay.value, hour:'', minute:'', location:'', landmark:'', notes:'', images: [] }); nextTick(() => lucide.createIcons()); };
+        const addItinerary = () => { itinerary.value.push({ id:Date.now(), day:selectedDay.value, hour:'', minute:'', location:'', landmark:'', notes:'', images: [], isEditingDetails: false }); nextTick(() => lucide.createIcons()); };
         const removeItinerary = (id) => itinerary.value = itinerary.value.filter(i => i.id !== id);
         const handleItineraryImageUpload = async (e, item) => {
             const file = e.target.files[0]; if (!file) return;
@@ -841,4 +858,3 @@ app.mount('#app');
 </script>
 </body>
 </html>
- in
