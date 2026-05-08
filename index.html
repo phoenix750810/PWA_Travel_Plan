@@ -47,7 +47,7 @@
 </head>
 <body class="max-w-md mx-auto min-h-screen pb-28">
 
-<div id="app" v-cloak>
+<div id="app" v-cloak @click="closeMenu">
 
     <div v-if="!activeTripId" class="px-6 pt-10 min-h-screen flex flex-col">
         <header class="mb-8">
@@ -252,35 +252,55 @@
                 
                 <div v-for="item in dailyItinerary" :key="item.id" class="ticket-card p-4 border-l-[6px] border-l-[#E8A87C]">
                     <div class="space-y-3">
-                        <div class="flex gap-2 items-center">
-                            <div class="flex items-center bg-[#FFF3E0] px-2 py-1 rounded-xl border border-[#FFE0B2]">
-                                <select v-model="item.hour" class="bg-transparent text-base font-ticket font-bold text-[#E65100] p-0"><option value="">--</option><option v-for="h in hours" :value="h">{{h}}</option></select>
-                                <span class="text-[#E65100] font-bold text-xs mx-0.5">:</span>
-                                <select v-model="item.minute" class="bg-transparent text-base font-ticket font-bold text-[#E65100] p-0"><option value="">--</option><option v-for="m in minutes" :value="m">{{m}}</option></select>
+                        
+                        <div class="flex gap-2 items-start">
+                            <div class="flex items-center bg-[#FFF3E0] px-2 py-1.5 rounded-xl border border-[#FFE0B2] shrink-0 mt-1">
+                                <select v-model="item.hour" class="bg-transparent text-base font-ticket font-bold text-[#E65100] p-0 leading-none"><option value="">--</option><option v-for="h in hours" :value="h">{{h}}</option></select>
+                                <span class="text-[#E65100] font-bold text-xs mx-0.5 leading-none">:</span>
+                                <select v-model="item.minute" class="bg-transparent text-base font-ticket font-bold text-[#E65100] p-0 leading-none"><option value="">--</option><option v-for="m in minutes" :value="m">{{m}}</option></select>
                             </div>
-                            <input v-model="item.location" class="flex-1 text-lg font-bold bg-transparent placeholder-[#BCAAA4]" placeholder="行程名稱...">
-                            <button @click="removeItinerary(item.id)" class="text-[#D7CCC8] hover:text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            
+                            <input v-model="item.location" class="flex-1 text-[17px] font-bold bg-transparent placeholder-[#BCAAA4] mt-1 pt-1 outline-none" placeholder="行程名稱...">
+                            
+                            <div class="flex flex-col items-center gap-1 shrink-0 relative mt-0.5 z-10">
+                                <button v-if="!(item.showMap || item.landmark) || !(item.showNotes || item.notes) || !(item.showImages || (item.images && item.images.length > 0))" 
+                                        @click.stop="toggleMenu(item.id)" 
+                                        class="w-7 h-7 flex items-center justify-center bg-[#F7F5F2] hover:bg-[#8EB076] text-[#A1887F] hover:text-white rounded-full transition-colors shadow-sm"
+                                        title="新增附件">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                </button>
+                                
+                                <button @click.stop="removeItinerary(item.id)" class="w-7 h-7 flex items-center justify-center text-[#D7CCC8] hover:text-red-400 transition-colors" title="刪除行程">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+
+                                <div v-if="activeMenuId === item.id" class="absolute top-0 right-9 bg-white border border-[#F2EFE9] rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] p-1.5 z-[50] w-28 flex flex-col gap-1">
+                                    <button v-if="!(item.showMap || item.landmark)" @click.stop="item.showMap=true; closeMenu(); $nextTick(()=>lucide.createIcons())" class="flex items-center gap-2.5 px-3 py-2.5 hover:bg-[#E3F2FD] text-[#5D4037] text-xs font-bold rounded-xl transition-colors"><i data-lucide="map-pin" class="w-4 h-4 text-[#4285F4]"></i>加地圖</button>
+                                    <button v-if="!(item.showNotes || item.notes)" @click.stop="item.showNotes=true; closeMenu(); $nextTick(()=>lucide.createIcons())" class="flex items-center gap-2.5 px-3 py-2.5 hover:bg-gray-100 text-[#5D4037] text-xs font-bold rounded-xl transition-colors"><i data-lucide="file-text" class="w-4 h-4 text-[#A1887F]"></i>加備註</button>
+                                    <button v-if="!(item.showImages || (item.images && item.images.length > 0))" @click.stop="item.showImages=true; closeMenu(); $nextTick(()=>lucide.createIcons())" class="flex items-center gap-2.5 px-3 py-2.5 hover:bg-gray-100 text-[#5D4037] text-xs font-bold rounded-xl transition-colors"><i data-lucide="image" class="w-4 h-4 text-[#8EB076]"></i>加圖片</button>
+                                </div>
+                            </div>
                         </div>
                         
-                        <div v-if="item.showMap || item.landmark" class="relative group">
+                        <div v-if="item.showMap || item.landmark" class="relative group mt-1">
                             <button @click="openMap(item.landmark)" class="w-full bg-[#E3F2FD] p-2.5 pr-8 rounded-xl flex items-center gap-2 text-[#1565C0] font-bold border border-[#BBDEFB]">
                                 <i data-lucide="map-pinned" class="w-4 h-4 shrink-0"></i>
                                 <input v-model="item.landmark" @click.stop class="flex-1 bg-transparent placeholder-[#90CAF9] text-xs font-bold p-0" placeholder="搜尋地標 (開啟地圖)">
                             </button>
-                            <button @click.stop="item.showMap = false; item.landmark = ''" class="absolute right-2 top-1/2 -translate-y-1/2 text-blue-300 hover:text-red-400 p-1 bg-[#E3F2FD] rounded-full">
+                            <button @click.stop="item.showMap = false; item.landmark = ''" class="absolute right-2 top-1/2 -translate-y-1/2 text-blue-300 hover:text-red-400 p-1 bg-[#E3F2FD] rounded-full transition-colors">
                                 <i data-lucide="x" class="w-4 h-4"></i>
                             </button>
                         </div>
 
-                        <div v-if="item.showNotes || item.notes" class="relative group">
+                        <div v-if="item.showNotes || item.notes" class="relative group mt-1">
                             <textarea v-model="item.notes" v-auto-height class="w-full bg-[#F7F5F2] p-3 pr-8 rounded-xl text-sm min-h-[50px] resize-none border-none placeholder-[#D7CCC8]" placeholder="備註..."></textarea>
-                            <button @click.stop="item.showNotes = false; item.notes = ''" class="absolute right-2 top-2 text-[#D7CCC8] hover:text-red-400 p-1 bg-[#F7F5F2] rounded-full">
+                            <button @click.stop="item.showNotes = false; item.notes = ''" class="absolute right-2 top-2 text-[#D7CCC8] hover:text-red-400 p-1 bg-[#F7F5F2] rounded-full transition-colors">
                                 <i data-lucide="x" class="w-4 h-4"></i>
                             </button>
                         </div>
                         
-                        <div v-if="item.showImages || (item.images && item.images.length > 0)" class="relative bg-[#F7F5F2] p-2 rounded-xl border border-transparent">
-                            <button @click.stop="item.showImages = false; item.images = []" class="absolute right-1 top-1 text-[#D7CCC8] hover:text-red-400 p-1 z-10">
+                        <div v-if="item.showImages || (item.images && item.images.length > 0)" class="relative bg-[#F7F5F2] p-2 rounded-xl border border-transparent mt-1">
+                            <button @click.stop="item.showImages = false; item.images = []" class="absolute right-1 top-1 text-[#D7CCC8] hover:text-red-400 p-1 z-10 transition-colors">
                                 <i data-lucide="x" class="w-4 h-4"></i>
                             </button>
                             <div class="flex flex-wrap gap-2 pr-6">
@@ -297,17 +317,6 @@
                             </div>
                         </div>
 
-                        <div v-if="!(item.showMap || item.landmark) || !(item.showNotes || item.notes) || !(item.showImages || (item.images && item.images.length > 0))" class="flex gap-2 pt-1">
-                            <button v-if="!(item.showMap || item.landmark)" @click="item.showMap = true; $nextTick(() => { if(window.lucide) window.lucide.createIcons() })" class="flex-1 text-[11px] font-bold text-[#A1887F] bg-[#F7F5F2] hover:bg-[#E3F2FD] hover:text-[#1565C0] py-1.5 rounded-lg flex items-center justify-center gap-1 transition-colors">
-                                <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> 地圖
-                            </button>
-                            <button v-if="!(item.showNotes || item.notes)" @click="item.showNotes = true; $nextTick(() => { if(window.lucide) window.lucide.createIcons() })" class="flex-1 text-[11px] font-bold text-[#A1887F] bg-[#F7F5F2] hover:bg-gray-100 py-1.5 rounded-lg flex items-center justify-center gap-1 transition-colors">
-                                <i data-lucide="file-text" class="w-3.5 h-3.5"></i> 備註
-                            </button>
-                            <button v-if="!(item.showImages || (item.images && item.images.length > 0))" @click="item.showImages = true; $nextTick(() => { if(window.lucide) window.lucide.createIcons() })" class="flex-1 text-[11px] font-bold text-[#A1887F] bg-[#F7F5F2] hover:bg-gray-100 py-1.5 rounded-lg flex items-center justify-center gap-1 transition-colors">
-                                <i data-lucide="image" class="w-3.5 h-3.5"></i> 圖片
-                            </button>
-                        </div>
                     </div>
                 </div>
                 <button @click="addItinerary" class="w-full py-3 border-2 border-dashed border-[#D7CCC8] rounded-2xl text-[#A1887F] font-bold hover:border-[#8EB076] transition-colors">+ 新增行程</button>
@@ -543,6 +552,11 @@ const app = createApp({
         const isEditingPackCats = ref(false);
 
         const previewImage = ref(null);
+        
+        // 新增彈窗控制
+        const activeMenuId = ref(null);
+        const toggleMenu = (id) => { activeMenuId.value = activeMenuId.value === id ? null : id; };
+        const closeMenu = () => { activeMenuId.value = null; };
 
         const tzMap = { 'TPE':8, 'KHH':8, 'NRT':9, 'HND':9, 'KIX':9, 'SIN':8, 'BKK':7, 'JFK':-5, 'LAX':-8 };
         const rates = { TWD: 1, SGD: 24.5, JPY: 0.21, USD: 31.5, KRW: 0.024, EUR: 34.2 };
@@ -621,7 +635,6 @@ const app = createApp({
             itinerary.value = safeParse(`TRIP_${trip.id}_I`, []);
             itinerary.value.forEach(i => { 
                 if(!i.images) i.images = []; 
-                // 相容舊資料並初始化狀態開關
                 if(i.showMap === undefined) i.showMap = !!i.landmark;
                 if(i.showNotes === undefined) i.showNotes = !!i.notes;
                 if(i.showImages === undefined) i.showImages = i.images && i.images.length > 0;
@@ -858,7 +871,8 @@ const app = createApp({
             packItems, packCategories, newPack, addPackItem, removePackItem, addPackCategory, removePackCat, isEditingPackCats,
             showImage, closeImage, previewImage, 
             changeTab, transInput, transResult, transError, isTranslating, languages, transLang, swapLang, getLangName, startVoice, isListening, doTranslate, copyText, handleOCR, scanImage, 
-            tzOffsets, showShareModal, shareOptions, openShareModal, confirmExport, importTrip 
+            tzOffsets, showShareModal, shareOptions, openShareModal, confirmExport, importTrip,
+            activeMenuId, toggleMenu, closeMenu
         };
     }
 });
