@@ -24,7 +24,8 @@
         .font-ticket { font-family: 'Oswald', sans-serif; letter-spacing: 0.05em; } 
         [v-cloak] { display: none !important; }
         
-        .ticket-card { background: #FFFFFF; border-radius: 24px; box-shadow: 0 8px 20px rgba(93, 64, 55, 0.05); margin-bottom: 1rem; border: 1px solid #F2EFE9; overflow: hidden; position: relative; }
+        /* 移除 overflow: hidden 讓彈出選單不會被卡片邊界裁切 */
+        .ticket-card { background: #FFFFFF; border-radius: 24px; box-shadow: 0 8px 20px rgba(93, 64, 55, 0.05); margin-bottom: 1rem; border: 1px solid #F2EFE9; position: relative; }
         
         /* 導覽列動態展開設計 */
         .nav-btn { display: flex; align-items: center; justify-content: center; padding: 0.6rem 1rem; border-radius: 999px; color: #A1887F; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); flex-shrink: 0; }
@@ -126,7 +127,7 @@
                 <div v-for="f in flights" :key="f.id" class="ticket-card group mb-0 border-[#E1F5FE]">
                     <button @click="removeFlight(f.id)" class="absolute top-1.5 right-1.5 z-20 bg-white/90 p-1.5 rounded-full shadow-sm text-red-300 hover:text-red-500 transition-all border border-red-50"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
 
-                    <div class="bg-[#EBF3F9] py-2 px-4 text-center border-b border-[#E1F5FE] flex items-center justify-between">
+                    <div class="bg-[#EBF3F9] py-2 px-4 text-center border-b border-[#E1F5FE] flex items-center justify-between rounded-t-[23px]">
                         <div class="w-1/2 text-center border-r border-blue-100/50 pr-2">
                             <label class="text-[9px] text-[#8D6E63]/60 font-bold tracking-widest block uppercase leading-none mb-0.5">Flight</label>
                             <input v-model="f.flightNo" class="bg-transparent font-ticket text-lg font-bold text-[#5D4037] w-full text-center uppercase outline-none placeholder-[#A1887F] p-0" placeholder="Flight No">
@@ -155,7 +156,7 @@
                             <div class="flex flex-col items-center w-[35%]">
                                 <input v-model="f.arrAirport" @input="updateFlightTZ(f, 'arr')" class="text-3xl font-ticket font-black text-[#6D6968] w-full text-center uppercase outline-none bg-transparent leading-none" placeholder="ARR">
                                 <input v-model="f.arrTerminal" class="mt-1 bg-transparent border-b border-dashed border-[#D7CCC8] w-full text-[10px] font-bold text-[#8EB076] text-center p-0 outline-none" placeholder="航廈">
-                                <select v-model="f.arrTz" class="mt-1 appearance-none bg-[#F0F0F0] text-[#A1887F] text-[9px] font-bold px-1.5 py-0.5 rounded text-center outline-none cursor-pointer"><option v-for="o in tzOffsets" :value="o">UTC{{ o>=0?'+'+o:o }}</option></select>
+                                <select v-model="f.arrTz" class="mt-1 appearance-none bg-[#F0F0F0] text-[#A1887F] text-[9px] font-bold px-1.5 py-0.5 rounded text-center outline-none cursor-pointer"><option v-for="o in tzOffsets" :value="o">UTC{{ o>=0?'+o:o }}</option></select>
                             </div>
                         </div>
 
@@ -250,7 +251,7 @@
                     </div>
                 </div>
                 
-                <div v-for="item in dailyItinerary" :key="item.id" class="ticket-card p-4 border-l-[6px] border-l-[#E8A87C]">
+                <div v-for="item in dailyItinerary" :key="item.id" class="ticket-card p-4 border-l-[6px] border-l-[#E8A87C]" :style="{ zIndex: activeMenuId === item.id ? 40 : 1 }">
                     <div class="space-y-3">
                         
                         <div class="flex gap-2 items-start">
@@ -267,7 +268,7 @@
                                     <i data-lucide="plus" class="w-4 h-4"></i>
                                 </button>
 
-                                <div v-if="activeMenuId === item.id" class="absolute top-9 right-0 bg-white border border-[#F2EFE9] rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-1.5 z-[50] w-36 flex flex-col gap-1 origin-top-right">
+                                <div v-if="activeMenuId === item.id" class="absolute top-9 right-0 bg-white border border-[#F2EFE9] rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-1.5 w-36 flex flex-col gap-1 origin-top-right">
                                     <button v-if="!(item.showMap || item.landmark)" @click.stop="item.showMap=true; closeMenu(); $nextTick(()=>lucide.createIcons())" class="flex items-center gap-2.5 px-3 py-2 hover:bg-[#E3F2FD] text-[#5D4037] text-sm font-bold rounded-xl transition-colors"><i data-lucide="map-pin" class="w-4 h-4 text-[#4285F4]"></i>加地圖</button>
                                     <button v-if="!(item.showNotes || item.notes)" @click.stop="item.showNotes=true; closeMenu(); $nextTick(()=>lucide.createIcons())" class="flex items-center gap-2.5 px-3 py-2 hover:bg-gray-100 text-[#5D4037] text-sm font-bold rounded-xl transition-colors"><i data-lucide="file-text" class="w-4 h-4 text-[#A1887F]"></i>加備註</button>
                                     <button v-if="!(item.showImages || (item.images && item.images.length > 0))" @click.stop="item.showImages=true; closeMenu(); $nextTick(()=>lucide.createIcons())" class="flex items-center gap-2.5 px-3 py-2 hover:bg-gray-100 text-[#5D4037] text-sm font-bold rounded-xl transition-colors"><i data-lucide="image" class="w-4 h-4 text-[#8EB076]"></i>加圖片</button>
