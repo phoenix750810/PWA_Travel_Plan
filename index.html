@@ -262,22 +262,24 @@
                             
                             <input v-model="item.location" class="flex-1 text-[17px] font-bold bg-transparent placeholder-[#BCAAA4] mt-1 pt-1 outline-none" placeholder="行程名稱...">
                             
-                            <div class="flex flex-col items-center gap-1 shrink-0 relative mt-0.5 z-10">
-                                <button v-if="!(item.showMap || item.landmark) || !(item.showNotes || item.notes) || !(item.showImages || (item.images && item.images.length > 0))" 
-                                        @click.stop="toggleMenu(item.id)" 
-                                        class="w-7 h-7 flex items-center justify-center bg-[#F7F5F2] hover:bg-[#8EB076] text-[#A1887F] hover:text-white rounded-full transition-colors shadow-sm"
-                                        title="新增附件">
+                            <div class="flex flex-col items-center shrink-0 relative mt-0.5 z-10">
+                                <button @click.stop="toggleMenu(item.id)" class="w-8 h-8 flex items-center justify-center bg-[#F7F5F2] hover:bg-[#8EB076] text-[#A1887F] hover:text-white rounded-full transition-colors shadow-sm" title="操作選單">
                                     <i data-lucide="plus" class="w-4 h-4"></i>
                                 </button>
-                                
-                                <button @click.stop="removeItinerary(item.id)" class="w-7 h-7 flex items-center justify-center text-[#D7CCC8] hover:text-red-400 transition-colors" title="刪除行程">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
 
-                                <div v-if="activeMenuId === item.id" class="absolute top-0 right-9 bg-white border border-[#F2EFE9] rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] p-1.5 z-[50] w-28 flex flex-col gap-1">
-                                    <button v-if="!(item.showMap || item.landmark)" @click.stop="item.showMap=true; closeMenu(); $nextTick(()=>lucide.createIcons())" class="flex items-center gap-2.5 px-3 py-2.5 hover:bg-[#E3F2FD] text-[#5D4037] text-xs font-bold rounded-xl transition-colors"><i data-lucide="map-pin" class="w-4 h-4 text-[#4285F4]"></i>加地圖</button>
-                                    <button v-if="!(item.showNotes || item.notes)" @click.stop="item.showNotes=true; closeMenu(); $nextTick(()=>lucide.createIcons())" class="flex items-center gap-2.5 px-3 py-2.5 hover:bg-gray-100 text-[#5D4037] text-xs font-bold rounded-xl transition-colors"><i data-lucide="file-text" class="w-4 h-4 text-[#A1887F]"></i>加備註</button>
-                                    <button v-if="!(item.showImages || (item.images && item.images.length > 0))" @click.stop="item.showImages=true; closeMenu(); $nextTick(()=>lucide.createIcons())" class="flex items-center gap-2.5 px-3 py-2.5 hover:bg-gray-100 text-[#5D4037] text-xs font-bold rounded-xl transition-colors"><i data-lucide="image" class="w-4 h-4 text-[#8EB076]"></i>加圖片</button>
+                                <div v-if="activeMenuId === item.id" class="absolute top-9 right-0 bg-white border border-[#F2EFE9] rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-1.5 z-[50] w-36 flex flex-col gap-1 origin-top-right">
+                                    <button v-if="!(item.showMap || item.landmark)" @click.stop="item.showMap=true; closeMenu(); $nextTick(()=>lucide.createIcons())" class="flex items-center gap-2.5 px-3 py-2 hover:bg-[#E3F2FD] text-[#5D4037] text-sm font-bold rounded-xl transition-colors"><i data-lucide="map-pin" class="w-4 h-4 text-[#4285F4]"></i>加地圖</button>
+                                    <button v-if="!(item.showNotes || item.notes)" @click.stop="item.showNotes=true; closeMenu(); $nextTick(()=>lucide.createIcons())" class="flex items-center gap-2.5 px-3 py-2 hover:bg-gray-100 text-[#5D4037] text-sm font-bold rounded-xl transition-colors"><i data-lucide="file-text" class="w-4 h-4 text-[#A1887F]"></i>加備註</button>
+                                    <button v-if="!(item.showImages || (item.images && item.images.length > 0))" @click.stop="item.showImages=true; closeMenu(); $nextTick(()=>lucide.createIcons())" class="flex items-center gap-2.5 px-3 py-2 hover:bg-gray-100 text-[#5D4037] text-sm font-bold rounded-xl transition-colors"><i data-lucide="image" class="w-4 h-4 text-[#8EB076]"></i>加圖片</button>
+
+                                    <div v-if="!(item.showMap || item.landmark) || !(item.showNotes || item.notes) || !(item.showImages || (item.images && item.images.length > 0))" class="h-px bg-gray-100 my-0.5"></div>
+
+                                    <button @click.stop="copyItem(item); closeMenu()" class="flex items-center gap-2.5 px-3 py-2 hover:bg-gray-100 text-[#5D4037] text-sm font-bold rounded-xl transition-colors"><i data-lucide="copy" class="w-4 h-4 text-[#8D6E63]"></i>複製</button>
+                                    <button v-if="copiedItem" @click.stop="pasteItemAfter(item); closeMenu()" class="flex items-center gap-2.5 px-3 py-2 hover:bg-[#E8F5E9] text-[#2E7D32] text-sm font-bold rounded-xl transition-colors"><i data-lucide="clipboard-paste" class="w-4 h-4"></i>貼上</button>
+
+                                    <div class="h-px bg-gray-100 my-0.5"></div>
+
+                                    <button @click.stop="removeItinerary(item.id); closeMenu()" class="flex items-center gap-2.5 px-3 py-2 hover:bg-red-50 text-red-500 text-sm font-bold rounded-xl transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i>刪除</button>
                                 </div>
                             </div>
                         </div>
@@ -293,8 +295,8 @@
                         </div>
 
                         <div v-if="item.showNotes || item.notes" class="relative group mt-1">
-                            <textarea v-model="item.notes" v-auto-height class="w-full bg-[#F7F5F2] p-3 pr-8 rounded-xl text-sm min-h-[50px] resize-none border-none placeholder-[#D7CCC8]" placeholder="備註..."></textarea>
-                            <button @click.stop="item.showNotes = false; item.notes = ''" class="absolute right-2 top-2 text-[#D7CCC8] hover:text-red-400 p-1 bg-[#F7F5F2] rounded-full transition-colors">
+                            <textarea rows="1" v-model="item.notes" v-auto-height class="w-full bg-[#F7F5F2] py-2.5 px-3 pr-8 rounded-xl text-sm min-h-[44px] overflow-hidden resize-none border-none placeholder-[#D7CCC8] leading-snug" placeholder="備註..."></textarea>
+                            <button @click.stop="item.showNotes = false; item.notes = ''" class="absolute right-1 top-1.5 text-[#D7CCC8] hover:text-red-400 p-1 bg-[#F7F5F2] rounded-full transition-colors">
                                 <i data-lucide="x" class="w-4 h-4"></i>
                             </button>
                         </div>
@@ -319,7 +321,13 @@
 
                     </div>
                 </div>
-                <button @click="addItinerary" class="w-full py-3 border-2 border-dashed border-[#D7CCC8] rounded-2xl text-[#A1887F] font-bold hover:border-[#8EB076] transition-colors">+ 新增行程</button>
+                
+                <div class="flex gap-2">
+                    <button @click="addItinerary" class="flex-1 py-3 border-2 border-dashed border-[#D7CCC8] rounded-2xl text-[#A1887F] font-bold hover:border-[#8EB076] transition-colors">+ 新增行程</button>
+                    <button v-if="copiedItem" @click="pasteItineraryGlobal" class="flex-1 py-3 border-2 border-dashed border-[#8EB076] bg-[#F1F8E9] rounded-2xl text-[#688F4E] font-bold hover:bg-[#E8F5E9] transition-colors flex items-center justify-center gap-1.5">
+                        <i data-lucide="clipboard-paste" class="w-4 h-4"></i>貼上行程
+                    </button>
+                </div>
             </section>
 
             <section v-if="currentTab === 'expense'" class="space-y-4">
@@ -553,8 +561,10 @@ const app = createApp({
 
         const previewImage = ref(null);
         
-        // 新增彈窗控制
+        // 新增彈窗與複製貼上控制
         const activeMenuId = ref(null);
+        const copiedItem = ref(null);
+        
         const toggleMenu = (id) => { activeMenuId.value = activeMenuId.value === id ? null : id; };
         const closeMenu = () => { activeMenuId.value = null; };
 
@@ -678,6 +688,27 @@ const app = createApp({
         const dailyItinerary = computed(() => itinerary.value.filter(i => i.day === selectedDay.value).sort((a,b) => ((a.hour||'ZZ')+(a.minute||'ZZ')).localeCompare((b.hour||'ZZ')+(b.minute||'ZZ'))));
         const addItinerary = () => { itinerary.value.push({ id:Date.now(), day:selectedDay.value, hour:'', minute:'', location:'', landmark:'', notes:'', images: [], showMap: false, showNotes: false, showImages: false }); nextTick(() => lucide.createIcons()); };
         const removeItinerary = (id) => itinerary.value = itinerary.value.filter(i => i.id !== id);
+        
+        // 複製與貼上邏輯
+        const copyItem = (item) => { copiedItem.value = JSON.parse(JSON.stringify(item)); };
+        const pasteItemAfter = (targetItem) => {
+            if(!copiedItem.value) return;
+            const newItem = JSON.parse(JSON.stringify(copiedItem.value));
+            newItem.id = Date.now();
+            newItem.day = selectedDay.value;
+            const idx = itinerary.value.findIndex(i => i.id === targetItem.id);
+            if(idx !== -1) itinerary.value.splice(idx + 1, 0, newItem);
+            nextTick(() => lucide.createIcons());
+        };
+        const pasteItineraryGlobal = () => {
+            if(!copiedItem.value) return;
+            const newItem = JSON.parse(JSON.stringify(copiedItem.value));
+            newItem.id = Date.now();
+            newItem.day = selectedDay.value;
+            itinerary.value.push(newItem);
+            nextTick(() => lucide.createIcons());
+        };
+
         const handleItineraryImageUpload = async (e, item) => {
             const file = e.target.files[0]; if (!file) return;
             try { item.images.push(await compressImage(file)); nextTick(() => lucide.createIcons()); } catch(e) { alert("圖片處理失敗"); }
@@ -872,7 +903,7 @@ const app = createApp({
             showImage, closeImage, previewImage, 
             changeTab, transInput, transResult, transError, isTranslating, languages, transLang, swapLang, getLangName, startVoice, isListening, doTranslate, copyText, handleOCR, scanImage, 
             tzOffsets, showShareModal, shareOptions, openShareModal, confirmExport, importTrip,
-            activeMenuId, toggleMenu, closeMenu
+            activeMenuId, toggleMenu, closeMenu, copiedItem, copyItem, pasteItemAfter, pasteItineraryGlobal
         };
     }
 });
