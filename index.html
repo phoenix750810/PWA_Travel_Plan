@@ -143,7 +143,9 @@
                             <div class="flex flex-col items-center w-[35%]">
                                 <input v-model="f.depAirport" @input="updateFlightTZ(f, 'dep')" class="text-3xl font-ticket font-black text-[#6D6968] w-full text-center uppercase outline-none bg-transparent leading-none" placeholder="DEP">
                                 <input v-model="f.depTerminal" class="mt-1 bg-transparent border-b border-dashed border-[#D7CCC8] w-full text-[10px] font-bold text-[#8EB076] text-center p-0 outline-none" placeholder="航廈">
-                                <select v-model="f.depTz" class="mt-1 appearance-none bg-[#F0F0F0] text-[#A1887F] text-[9px] font-bold px-1.5 py-0.5 rounded text-center outline-none cursor-pointer"><option v-for="o in tzOffsets" :value="o">UTC{{ o>=0 ? '+' + o : o }}</option></select>
+                                <select v-model="f.depTz" class="mt-1 appearance-none bg-[#F0F0F0] text-[#A1887F] text-[9px] font-bold px-1.5 py-0.5 rounded text-center outline-none cursor-pointer">
+                                    <option v-for="o in tzOffsets" :value="o">UTC{{ o >= 0 ? '+' + o : o }}</option>
+                                </select>
                             </div>
                             <div class="flex-1 flex flex-col items-center px-1">
                                 <div class="flex items-center w-full gap-1">
@@ -156,7 +158,9 @@
                             <div class="flex flex-col items-center w-[35%]">
                                 <input v-model="f.arrAirport" @input="updateFlightTZ(f, 'arr')" class="text-3xl font-ticket font-black text-[#6D6968] w-full text-center uppercase outline-none bg-transparent leading-none" placeholder="ARR">
                                 <input v-model="f.arrTerminal" class="mt-1 bg-transparent border-b border-dashed border-[#D7CCC8] w-full text-[10px] font-bold text-[#8EB076] text-center p-0 outline-none" placeholder="航廈">
-                                <select v-model="f.arrTz" class="mt-1 appearance-none bg-[#F0F0F0] text-[#A1887F] text-[9px] font-bold px-1.5 py-0.5 rounded text-center outline-none cursor-pointer"><option v-for="o in tzOffsets" :value="o">UTC{{ o>=0 ? '+' + o : o }}</option></select>
+                                <select v-model="f.arrTz" class="mt-1 appearance-none bg-[#F0F0F0] text-[#A1887F] text-[9px] font-bold px-1.5 py-0.5 rounded text-center outline-none cursor-pointer">
+                                    <option v-for="o in tzOffsets" :value="o">UTC{{ o >= 0 ? '+' + o : o }}</option>
+                                </select>
                             </div>
                         </div>
 
@@ -269,9 +273,9 @@
                                 </button>
 
                                 <div v-if="activeMenuId === item.id" class="absolute top-9 right-0 bg-white border border-[#F2EFE9] rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-1.5 w-36 flex flex-col gap-1 origin-top-right">
-                                    <button v-if="!(item.showMap || item.landmark)" @click.stop="item.showMap=true; closeMenu(); $nextTick(()=>lucide.createIcons())" class="flex items-center gap-2.5 px-3 py-2 hover:bg-[#E3F2FD] text-[#5D4037] text-sm font-bold rounded-xl transition-colors"><i data-lucide="map-pin" class="w-4 h-4 text-[#4285F4]"></i>加地圖</button>
-                                    <button v-if="!(item.showNotes || item.notes)" @click.stop="item.showNotes=true; closeMenu(); $nextTick(()=>lucide.createIcons())" class="flex items-center gap-2.5 px-3 py-2 hover:bg-gray-100 text-[#5D4037] text-sm font-bold rounded-xl transition-colors"><i data-lucide="file-text" class="w-4 h-4 text-[#A1887F]"></i>加備註</button>
-                                    <button v-if="!(item.showImages || (item.images && item.images.length > 0))" @click.stop="item.showImages=true; closeMenu(); $nextTick(()=>lucide.createIcons())" class="flex items-center gap-2.5 px-3 py-2 hover:bg-gray-100 text-[#5D4037] text-sm font-bold rounded-xl transition-colors"><i data-lucide="image" class="w-4 h-4 text-[#8EB076]"></i>加圖片</button>
+                                    <button v-if="!(item.showMap || item.landmark)" @click.stop="item.showMap=true; closeMenu(); refreshIcons()" class="flex items-center gap-2.5 px-3 py-2 hover:bg-[#E3F2FD] text-[#5D4037] text-sm font-bold rounded-xl transition-colors"><i data-lucide="map-pin" class="w-4 h-4 text-[#4285F4]"></i>加地圖</button>
+                                    <button v-if="!(item.showNotes || item.notes)" @click.stop="item.showNotes=true; closeMenu(); refreshIcons()" class="flex items-center gap-2.5 px-3 py-2 hover:bg-gray-100 text-[#5D4037] text-sm font-bold rounded-xl transition-colors"><i data-lucide="file-text" class="w-4 h-4 text-[#A1887F]"></i>加備註</button>
+                                    <button v-if="!(item.showImages || (item.images && item.images.length > 0))" @click.stop="item.showImages=true; closeMenu(); refreshIcons()" class="flex items-center gap-2.5 px-3 py-2 hover:bg-gray-100 text-[#5D4037] text-sm font-bold rounded-xl transition-colors"><i data-lucide="image" class="w-4 h-4 text-[#8EB076]"></i>加圖片</button>
 
                                     <div v-if="!(item.showMap || item.landmark) || !(item.showNotes || item.notes) || !(item.showImages || (item.images && item.images.length > 0))" class="h-px bg-gray-100 my-0.5"></div>
 
@@ -568,6 +572,9 @@ const app = createApp({
         
         const toggleMenu = (id) => { activeMenuId.value = activeMenuId.value === id ? null : id; };
         const closeMenu = () => { activeMenuId.value = null; };
+        
+        // 確保 Lucide 圖示安全渲染
+        const refreshIcons = () => { nextTick(() => { if (window.lucide) window.lucide.createIcons(); }); };
 
         const tzMap = { 'TPE':8, 'KHH':8, 'NRT':9, 'HND':9, 'KIX':9, 'SIN':8, 'BKK':7, 'JFK':-5, 'LAX':-8 };
         const rates = { TWD: 1, SGD: 24.5, JPY: 0.21, USD: 31.5, KRW: 0.024, EUR: 34.2 };
@@ -660,12 +667,14 @@ const app = createApp({
             packCategories.value = safeParse(`TRIP_${trip.id}_PC`, ['證件', '電子', '衣物', '盥洗']);
             
             newExp.value.date = trip.startDate || new Date().toISOString().split('T')[0];
-            nextTick(() => { lucide.createIcons(); if (currentTab.value === 'expense') renderChart(); });
+            refreshIcons();
+            if (currentTab.value === 'expense') renderChart();
         };
-        const closeTrip = () => { activeTripId.value = null; nextTick(() => lucide.createIcons()); };
+        
+        const closeTrip = () => { activeTripId.value = null; refreshIcons(); };
 
         // ✈️ 機票邏輯
-        const addFlight = () => { flights.value.push({ id:Date.now(), flightNo:'', depAirport:'', arrAirport:'', depDate:'', arrDate:'', depTerminal:'', arrTerminal:'', depTz:8, arrTz:8 }); nextTick(() => lucide.createIcons()); };
+        const addFlight = () => { flights.value.push({ id:Date.now(), flightNo:'', depAirport:'', arrAirport:'', depDate:'', arrDate:'', depTerminal:'', arrTerminal:'', depTz:8, arrTz:8 }); refreshIcons(); };
         const removeFlight = (id) => flights.value = flights.value.filter(f => f.id !== id);
         const updateFlightTZ = (f, type) => {
             if (!f.depAirport && !f.arrAirport) return;
@@ -684,10 +693,10 @@ const app = createApp({
 
         // 🗺️ 行程邏輯
         const getCurrentDate = (offset) => { if(activeTripMeta.value.startDate) { const d = new Date(activeTripMeta.value.startDate); d.setDate(d.getDate() + offset - 1); return d.toLocaleDateString('en-US', {month:'short', day:'numeric'}); } return `Day ${offset}`; };
-        const selectDay = (d) => { selectedDay.value = d; nextTick(() => lucide.createIcons()); };
-        const updateDays = (v) => { totalDays.value = Math.max(1, totalDays.value + v); if(selectedDay.value > totalDays.value) selectedDay.value = totalDays.value; nextTick(() => lucide.createIcons()); };
+        const selectDay = (d) => { selectedDay.value = d; refreshIcons(); };
+        const updateDays = (v) => { totalDays.value = Math.max(1, totalDays.value + v); if(selectedDay.value > totalDays.value) selectedDay.value = totalDays.value; refreshIcons(); };
         const dailyItinerary = computed(() => itinerary.value.filter(i => i.day === selectedDay.value).sort((a,b) => ((a.hour||'ZZ')+(a.minute||'ZZ')).localeCompare((b.hour||'ZZ')+(b.minute||'ZZ'))));
-        const addItinerary = () => { itinerary.value.push({ id:Date.now(), day:selectedDay.value, hour:'', minute:'', location:'', landmark:'', notes:'', images: [], showMap: false, showNotes: false, showImages: false }); nextTick(() => lucide.createIcons()); };
+        const addItinerary = () => { itinerary.value.push({ id:Date.now(), day:selectedDay.value, hour:'', minute:'', location:'', landmark:'', notes:'', images: [], showMap: false, showNotes: false, showImages: false }); refreshIcons(); };
         const removeItinerary = (id) => itinerary.value = itinerary.value.filter(i => i.id !== id);
         
         // 複製與貼上邏輯
@@ -699,7 +708,7 @@ const app = createApp({
             newItem.day = selectedDay.value;
             const idx = itinerary.value.findIndex(i => i.id === targetItem.id);
             if(idx !== -1) itinerary.value.splice(idx + 1, 0, newItem);
-            nextTick(() => lucide.createIcons());
+            refreshIcons();
         };
         const pasteItineraryGlobal = () => {
             if(!copiedItem.value) return;
@@ -707,28 +716,30 @@ const app = createApp({
             newItem.id = Date.now();
             newItem.day = selectedDay.value;
             itinerary.value.push(newItem);
-            nextTick(() => lucide.createIcons());
+            refreshIcons();
         };
 
         const handleItineraryImageUpload = async (e, item) => {
             const file = e.target.files[0]; if (!file) return;
-            try { item.images.push(await compressImage(file)); nextTick(() => lucide.createIcons()); } catch(e) { alert("圖片處理失敗"); }
+            try { item.images.push(await compressImage(file)); refreshIcons(); } catch(e) { alert("圖片處理失敗"); }
             e.target.value = ''; 
         };
         const removeItineraryImage = (item, idx) => { item.images.splice(idx, 1); };
-        const openMap = (loc) => loc && window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`, '_blank');
+        
+        // 安全的 Google Maps URL
+        const openMap = (loc) => { if(loc) window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`, '_blank'); };
 
         // 🧳 準備 (Pack) 邏輯
         const addPackCategory = () => { const c = prompt("新增準備類別:"); if(c&&c.trim() && !packCategories.value.includes(c)) { packCategories.value.push(c); newPack.value.cat=c; }};
         const removePackCat = (cat) => { if(confirm(`刪除類別「${cat}」？`)) packCategories.value = packCategories.value.filter(c => c !== cat); };
-        const addPackItem = () => { if(newPack.value.name) { packItems.value.push({...newPack.value, id:Date.now(), done:false}); newPack.value.name=''; nextTick(() => lucide.createIcons()); }};
+        const addPackItem = () => { if(newPack.value.name) { packItems.value.push({...newPack.value, id:Date.now(), done:false}); newPack.value.name=''; refreshIcons(); }};
         const removePackItem = (id) => packItems.value = packItems.value.filter(i => i.id !== id);
 
         // 🛍️ 購物邏輯
         const addShopCategory = () => { const c = prompt("新增購物類別:"); if(c&&c.trim() && !shopCategories.value.includes(c)) { shopCategories.value.push(c); newItem.value.cat=c; }};
         const removeShopCat = (cat) => { if(confirm(`刪除類別「${cat}」？`)) shopCategories.value = shopCategories.value.filter(c => c !== cat); };
         const handleShoppingImageUpload = async (e) => { const file = e.target.files[0]; if(file) { try { newItem.value.image = await compressImage(file); } catch(error) {} } };
-        const addShopItem = () => { if(newItem.value.name) { shoppingItems.value.push({...newItem.value, id:Date.now(), done:false}); newItem.value.name=''; newItem.value.image=null; nextTick(() => lucide.createIcons()); }};
+        const addShopItem = () => { if(newItem.value.name) { shoppingItems.value.push({...newItem.value, id:Date.now(), done:false}); newItem.value.name=''; newItem.value.image=null; refreshIcons(); }};
         const removeShopItem = (id) => shoppingItems.value = shoppingItems.value.filter(i => i.id !== id);
 
         // 💰 記帳邏輯
@@ -747,7 +758,7 @@ const app = createApp({
                     expenses.value.push({...newExp.value, id:Date.now()}); 
                 }
                 newExp.value.amount = null; newExp.value.note = ''; 
-                renderChart(); nextTick(() => lucide.createIcons()); 
+                renderChart(); refreshIcons(); 
             }
         };
         const removeExpense = (id) => { expenses.value = expenses.value.filter(e => e.id !== id); renderChart(); };
@@ -802,7 +813,7 @@ const app = createApp({
         };
 
         // --- 圖片預覽 ---
-        const showImage = (img) => { previewImage.value = img; const vp = document.querySelector('meta[name="viewport"]'); if(vp) vp.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes'); nextTick(() => lucide.createIcons()); };
+        const showImage = (img) => { previewImage.value = img; const vp = document.querySelector('meta[name="viewport"]'); if(vp) vp.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes'); refreshIcons(); };
         const closeImage = () => { previewImage.value = null; const vp = document.querySelector('meta[name="viewport"]'); if(vp) vp.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'); };
 
         // --- 翻譯邏輯 ---
@@ -815,7 +826,7 @@ const app = createApp({
         const handleOCR = (e) => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (evt) => { scanImage.value = evt.target.result; setTimeout(() => { scanImage.value = null; transInput.value = "Pork Bone Soup\nSpicy Noodles\n$15.00"; }, 1500); }; reader.readAsDataURL(file); } };
 
         // 切換分頁
-        const changeTab = (id) => { currentTab.value = id; if(id === 'expense') renderChart(); nextTick(() => lucide.createIcons()); };
+        const changeTab = (id) => { currentTab.value = id; if(id === 'expense') renderChart(); refreshIcons(); };
 
         // --- 分享與匯出入 ---
         const openShareModal = (trip) => { tripToShare.value = trip; shareOptions.value = { flights: true, pack: true, itinerary: true, expenses: true, shopping: true }; showShareModal.value = true; };
@@ -863,7 +874,7 @@ const app = createApp({
                     localStorage.setItem(`TRIP_${newId}_SC`, JSON.stringify(data.shopCategories || []));
                     localStorage.setItem(`TRIP_${newId}_PC`, JSON.stringify(data.packCategories || []));
                     allTrips.value.push(newMeta); saveAllTrips(); alert("匯入成功！");
-                    nextTick(() => lucide.createIcons());
+                    refreshIcons();
                 } catch(err) { alert("匯入失敗！"); }
                 event.target.value = ''; 
             };
@@ -892,7 +903,7 @@ const app = createApp({
             
         }, { deep: true });
 
-        onMounted(() => { if(window.lucide) lucide.createIcons(); });
+        onMounted(() => { refreshIcons(); });
 
         return { 
             activeTripId, activeTripMeta, allTrips, showAddModal, newTripForm, addNewTrip, deleteTrip, openTrip, closeTrip, saveAllTrips, 
@@ -904,7 +915,7 @@ const app = createApp({
             showImage, closeImage, previewImage, 
             changeTab, transInput, transResult, transError, isTranslating, languages, transLang, swapLang, getLangName, startVoice, isListening, doTranslate, copyText, handleOCR, scanImage, 
             tzOffsets, showShareModal, shareOptions, openShareModal, confirmExport, importTrip,
-            activeMenuId, toggleMenu, closeMenu, copiedItem, copyItem, pasteItemAfter, pasteItineraryGlobal
+            activeMenuId, toggleMenu, closeMenu, copiedItem, copyItem, pasteItemAfter, pasteItineraryGlobal, refreshIcons
         };
     }
 });
