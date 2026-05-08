@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Travel Master v32.0</title>
+    <title>Travel Master v31.0</title>
     
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
@@ -156,7 +156,7 @@
                             <div class="flex flex-col items-center w-[35%]">
                                 <input v-model="f.arrAirport" @input="updateFlightTZ(f, 'arr')" class="text-3xl font-ticket font-black text-[#6D6968] w-full text-center uppercase outline-none bg-transparent leading-none" placeholder="ARR">
                                 <input v-model="f.arrTerminal" class="mt-1 bg-transparent border-b border-dashed border-[#D7CCC8] w-full text-[10px] font-bold text-[#8EB076] text-center p-0 outline-none" placeholder="航廈">
-                                <select v-model="f.arrTz" class="mt-1 appearance-none bg-[#F0F0F0] text-[#A1887F] text-[9px] font-bold px-1.5 py-0.5 rounded text-center outline-none cursor-pointer"><option v-for="o in tzOffsets" :value="o">UTC{{ o>=0?'+o:o }}</option></select>
+                                <select v-model="f.arrTz" class="mt-1 appearance-none bg-[#F0F0F0] text-[#A1887F] text-[9px] font-bold px-1.5 py-0.5 rounded text-center outline-none cursor-pointer"><option v-for="o in tzOffsets" :value="o">UTC{{ o>=0?'+'+o:o }}</option></select>
                             </div>
                         </div>
 
