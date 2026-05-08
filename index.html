@@ -275,7 +275,7 @@
                                     <div v-if="!(item.showMap || item.landmark) || !(item.showNotes || item.notes) || !(item.showImages || (item.images && item.images.length > 0))" class="h-px bg-gray-100 my-0.5"></div>
 
                                     <button @click.stop="copyItem(item); closeMenu()" class="flex items-center gap-2.5 px-3 py-2 hover:bg-gray-100 text-[#5D4037] text-sm font-bold rounded-xl transition-colors"><i data-lucide="copy" class="w-4 h-4 text-[#8D6E63]"></i>複製</button>
-                                    <button v-if="copiedItem" @click.stop="pasteItemAfter(item); closeMenu()" class="flex items-center gap-2.5 px-3 py-2 hover:bg-[#E8F5E9] text-[#2E7D32] text-sm font-bold rounded-xl transition-colors"><i data-lucide="clipboard-paste" class="w-4 h-4"></i>貼上</button>
+                                    <button v-if="copiedItem" @click.stop="pasteItemAfter(item); closeMenu()" class="flex items-center gap-2.5 px-3 py-2 hover:bg-[#E8F5E9] text-[#2E7D32] text-sm font-bold rounded-xl transition-colors"><i data-lucide="clipboard-paste" class="w-4 h-4 text-[#43A047]"></i>貼上</button>
 
                                     <div class="h-px bg-gray-100 my-0.5"></div>
 
@@ -324,7 +324,7 @@
                 
                 <div class="flex gap-2">
                     <button @click="addItinerary" class="flex-1 py-3 border-2 border-dashed border-[#D7CCC8] rounded-2xl text-[#A1887F] font-bold hover:border-[#8EB076] transition-colors">+ 新增行程</button>
-                    <button v-if="copiedItem" @click="pasteItineraryGlobal" class="flex-1 py-3 border-2 border-dashed border-[#8EB076] bg-[#F1F8E9] rounded-2xl text-[#688F4E] font-bold hover:bg-[#E8F5E9] transition-colors flex items-center justify-center gap-1.5">
+                    <button v-if="copiedItem" @click="pasteItineraryGlobal" class="flex-1 py-3 border-2 border-dashed border-[#8EB076] bg-[#F1F8E9] rounded-2xl text-[#688F4E] font-bold hover:bg-[#E8F5E9] transition-colors flex items-center justify-center gap-1.5 shadow-sm">
                         <i data-lucide="clipboard-paste" class="w-4 h-4"></i>貼上行程
                     </button>
                 </div>
